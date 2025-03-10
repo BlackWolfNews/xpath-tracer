@@ -333,3 +333,10 @@ browser.runtime.onMessage.addListener((message) => {
 });
 
 console.log("Management setup complete");
+
+function debugLog(message) {
+  console.log(message); // For now, later to IndexedDB
+  // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
+}
+// Use it:
+debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));
