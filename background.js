@@ -71,23 +71,25 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       const transaction = db.transaction(["xpaths"], "readwrite");
       const store = transaction.objectStore("xpaths");
       const entry = message.data;
-      entry.url = message.url; // Ensure URL is attached
-      entry.id = entry.id || Date.now(); // Unique ID if not set
-      const request = store.getAll();
-      request.onsuccess = () => {
-        const existing = request.result.find(
+      entry.url = message.url;
+      entry.id = entry.id || Date.now();
+      const checkRequest = store.getAll();
+      checkRequest.onsuccess = () => {
+        const existing = checkRequest.result.find(
           (e) => e.xpath === entry.xpath && e.url === entry.url
         );
         if (existing) {
           console.log("Duplicate entry skipped:", entry.xpath, entry.url);
         } else {
-          store.put(entry).then(() => {
+          const putRequest = store.put(entry);
+          putRequest.onsuccess = () => {
             console.log("Data saved to IndexedDB:", entry);
-            loadXPaths(); // Sync UI after save
-          }).catch((err) => console.error("Save failed:", err));
+            loadXPaths();
+          };
+          putRequest.onerror = (err) => console.error("Save failed:", err);
         }
       };
-      request.onerror = (err) => console.error("GetAll failed:", err);
+      checkRequest.onerror = (err) => console.error("GetAll failed:", err);
     }).catch((err) => console.error("DB access failed:", err));
   } else if (message.action === "loadXPaths") {
     console.log("Loading XPaths");
@@ -194,3 +196,10 @@ browser.browserAction.onClicked.addListener(() => {
   console.log("Browser action clicked, opening management tab");
   browser.tabs.create({ url: browser.runtime.getURL("management.html") });
 });
+
+function debugLog(message) {
+  console.log(message); // For now, later to IndexedDB
+  // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
+}
+// Use it:
+debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));
