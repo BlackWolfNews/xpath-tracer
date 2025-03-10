@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>XPath Tracer</title>
+  <link rel="stylesheet" href="sidebar.css">
+  <script src="Sortable.min.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #label-entry {
+      margin-top: 10px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    #label-entry.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sidebar-container {
+      width: 300px;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      border-radius: 8px;
+      padding: 5px 10px;
+    }
+    input[type="text"],
+    select,
+    #workflow-dialog,
+    #label-entry {
+      border-radius: 4px;
+      padding: 5px;
+    }
+    #workflow-search,
+    #workflow-dropdown {
+      text-align: center;
+    }
+    #workflow-search::placeholder {
+      text-align: center;
+    }
+    .sortable-pages > li {
+      font-size: 18px;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .sortable-sections > li {
+      font-size: 16px;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .sortable-subsections > li {
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .sortable-entries > li {
+      font-size: 14px;
+    }
+    .sortable-entries > li::after {
+      content: " (" attr(data-type) ")";
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar-container">
+    <h2>XPath Tracer</h2>
+    <div id="workflow-dialog" style="display: none;">
+      <h3>Start New Workflow</h3>
+      <label>Workflow Name: <input id="workflow-name" type="text"></label><br>
+      <label>Page Name: <input id="page-name" type="text"></label><br>
+      <label>Section(s): <span id="section-count">1</span></label>
+      <div id="sections-list">
+        <div class="section-entry">
+          <input type="text" class="section-input" placeholder="Section Name">
+          <button class="remove-section">-</button>
+        </div>
+      </div>
+      <button id="add-section">+</button>
+      <button id="save-workflow">Save</button>
+      <button id="cancel-workflow">Cancel</button>
+    </div>
+    <div id="label-entry">
+      <label for="label-input">Custom Label:</label>
+      <input type="text" id="label-input" placeholder="Enter label">
+      <button id="save-label">Save</button>
+    </div>
+    <button id="toggle-capture">Start Capturing</button>
+    <input type="text" id="workflow-search" placeholder="Search workflows">
+    <select id="workflow-dropdown"></select>
+    <div id="sidebar-controls">
+      <button id="edit-list">Edit List</button>
+      <button id="highlight-toggle">Highlight All</button>
+    </div>
+    <div id="error-message" style="color: red; text-align: center;"></div>
+    <ul id="xpath-list"></ul>
+    <script src="sidebar.js"></script>
+  </div>
+</body>
+</html>
