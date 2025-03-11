@@ -113,7 +113,7 @@ browser.runtime.onMessage.addListener((message) => {
     console.log("Highlight results:", results);
   } else if (message.action === "clearHighlights") {
     document.querySelectorAll("*").forEach((el) => {
-      if (el.style.border === "2px solid red") el.style.border = "";
+      if (el.style.border === "2px solid #4444ff") el.style.border = "";
     });
   }
 });
@@ -132,7 +132,7 @@ function highlightByXPath(xpath) {
       null
     ).singleNodeValue;
     if (element) {
-      element.style.border = "2px solid red";
+      element.style.border = "2px solid #4444ff";
       return true;
     }
     console.log("XPath failed:", xpath);
@@ -151,7 +151,7 @@ function highlightByCSS(selector) {
   try {
     const element = document.querySelector(selector);
     if (element) {
-      element.style.border = "2px solid red";
+      element.style.border = "2px solid #4444ff";
       return true;
     }
     console.log("CSS selector failed:", selector);
@@ -170,7 +170,7 @@ function highlightByCSSPath(path) {
   try {
     const element = document.querySelector(path);
     if (element) {
-      element.style.border = "2px solid red";
+      element.style.border = "2px solid #4444ff";
       return true;
     }
     console.log("CSS path failed:", path);

@@ -6,6 +6,7 @@ let currentSection = null;
 let isCapturing = false;
 let activeTabId = null;
 let pendingData = null;
+let managementTabId = null;
 
 function getElement(id) {
   const el = document.getElementById(id);
@@ -301,7 +302,8 @@ if (toggleCaptureButton) {
 browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
   activeTabId = tabs[0].id;
   console.log("Initial active tab ID set:", activeTabId);
-  browser.runtime.sendMessage({ action: "getCaptureState" }).then((response) => {
+  browser.runtime.sendMessage({ action: "getManagementTab" }).then((response) => {
+    managementTabId = response?.tabId || null;
     if (
       response?.enabled !== undefined &&
       (!response.tabId || response.tabId === activeTabId)
@@ -330,22 +332,37 @@ function renderList(data) {
     btnDiv.className = "entry-buttons";
     const hBtn = document.createElement("button");
     hBtn.textContent = "H";
+    hBtn.className = "highlight-btn";
     hBtn.onclick = () => highlightElement(entry);
     const addBtn = document.createElement("button");
     addBtn.textContent = "+";
     addBtn.className = "small-btn";
     addBtn.onclick = () => addSectionPrompt(entry);
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit-btn";
+    editBtn.onclick = () => {
+      if (managementTabId) {
+        browser.tabs.update(managementTabId, { active: true });
+      } else {
+        browser.tabs.create({ url: "management.html" }).then((tab) => {
+          managementTabId = tab.id;
+        });
+      } // Add this closing brace for onclick
+    }; // Semicolon optional but clean
     const removeBtn = document.createElement("button");
     removeBtn.textContent = "-";
     removeBtn.className = "small-btn remove";
     removeBtn.onclick = () => removeEntry(entry);
     btnDiv.appendChild(hBtn);
     btnDiv.appendChild(addBtn);
+    btnDiv.appendChild(editBtn); // Add editBtn here (was missing!)
     btnDiv.appendChild(removeBtn);
     div.appendChild(btnDiv);
     list.appendChild(div);
-  });
-}
+  }); // Close forEach
+} // Close function
+
 function addSectionPrompt(entry) {
   const section = prompt("Section name (leave blank for none):");
   if (section !== null) {
@@ -353,6 +370,7 @@ function addSectionPrompt(entry) {
     saveData(entry);
   }
 }
+
 function removeEntry(entry) {
   // Logic to remove from IndexedDB and re-render
 }

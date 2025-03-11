@@ -33,9 +33,12 @@ function renderWorkflowList() {
     let html = `<ul class="sortable-pages">`;
     Object.keys(grouped[currentState]).forEach((page) => {
       const sections = grouped[currentState][page];
-      const pageEntries = Object.values(sections).flat().length;
+      const pageEntries = Object.values(sections).flatMap(subs => Object.values(subs).flat()).length;
       totalEntries += pageEntries;
-      html += `<li class="page" data-page="${page}"><strong>${page}</strong> (${pageEntries} items)<small>${Object.values(sections).flat()[0]?.url || "No URL"}</small><ul class="sortable-sections">`;
+      html += `<li class="page" data-page="${page}"><strong>${page}</strong> (${pageEntries} items)<button class="add-section small-btn">+</button><button class="remove-page small-btn remove">-</button><small>${Object.values(sections).flat()[0]?.url || "No URL"}</small><ul class="sortable-sections">`;
+      html += `<li class="section" data-section="${section}"><strong>${section}</strong><button class="add-subsection small-btn">+</button><button class="remove-section small-btn remove">-</button><ul class="sortable-subsections">`;
+      html += `<li class="subsection" data-subsection="${subsection}">${subsection}<button class="remove-subsection small-btn remove">-</button><ul>`;
+      html += `<li class="entry" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit-btn" data-id="${entry.id}">Edit</button><button class="delete-btn" data-id="${entry.id}">Delete</button></li>`;
 
       Object.keys(sections).forEach((section) => {
         if (section) { // Skip unnamed/empty sections
@@ -119,6 +122,36 @@ function renderWorkflowList() {
       });
     });
 
+    document.querySelectorAll(".add-section").forEach((button) => {
+      button.addEventListener("click", () => {
+        const page = button.parentElement.dataset.page;
+        const section = prompt("Section name:");
+        if (section) {
+          grouped[currentState][page][section] = {};
+          renderWorkflowList();
+        }
+      });
+    });
+    document.querySelectorAll(".remove-page").forEach((button) => {
+      button.addEventListener("click", () => {
+        const page = button.parentElement.dataset.page;
+        if (confirm(`Remove page "${page}"?`)) {
+          delete grouped[currentState][page];
+          renderWorkflowList();
+        }
+      });
+    });
+    document.querySelectorAll(".remove-section").forEach((button) => {
+      button.addEventListener("click", () => {
+        const page = button.parentElement.parentElement.dataset.page;
+        const section = button.parentElement.dataset.section;
+        if (confirm(`Remove section "${section}"?`)) {
+          delete grouped[currentState][page][section];
+          renderWorkflowList();
+        }
+      });
+    });
+
     initSortable();
   }
 }
@@ -198,15 +231,16 @@ function initSortable() {
 }
 
 function showEditDialog(entry) {
-  const dialog = document.createElement("div");
-  dialog.className = "popup";
-  dialog.innerHTML = `
-    <h3>Edit Item</h3>
-    <label>Label: <input id="edit-label" type="text" value="${entry?.customLabel || entry?.label || ""}"></label><br>
-    <button id="save-edit">Save</button>
-    <button id="cancel-edit">Cancel</button>
-  `;
-  document.body.appendChild(dialog);
+  const dialog = document.getElementById("edit-dialog");
+  document.getElementById("edit-label").value = entry.customLabel || entry.label;
+  dialog.style.display = "block";
+  document.getElementById("save-edit").onclick = () => {
+    entry.customLabel = document.getElementById("edit-label").value;
+    browser.runtime.sendMessage({ action: "saveData", url: entry.url, data: entry });
+    dialog.style.display = "none";
+    renderWorkflowList();
+  };
+}
 
   getElement("save-edit").addEventListener("click", () => {
     const newLabel = getElement("edit-label").value.trim();
@@ -225,7 +259,6 @@ function showEditDialog(entry) {
   getElement("cancel-edit").addEventListener("click", () => {
     document.body.removeChild(dialog);
   });
-}
 
 function updateDropdown() {
   const dropdown = getElement("workflow-dropdown");

@@ -326,6 +326,10 @@ button:disabled,
   margin: 5px 0;
 }
 
+.page, .section, .subsection { 
+  display: flex; align-items: center; gap: 5px; 
+}
+
 .section-title {
   cursor: pointer;
 }
@@ -344,7 +348,7 @@ button:disabled,
 }
 
 .delete {
-  background-color: #ff4444;
+  background-color: #20b2aa;
   border: none;
   color: white;
   padding: 2px 8px;
@@ -374,12 +378,12 @@ button:disabled,
   text-align: center;
 }
 
-#key-input,
-#url-input {
-  display: block;
-  width: 80%;
-  margin: 0 auto 5px auto;
-  padding: 5px;
+#key-input, #url-input, #label-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .popup {
@@ -402,7 +406,7 @@ button:disabled,
 }
 
 .add-subsection, .remove-subsection { 
-  width: 20px; height: 20px; border-radius: 50%; margin-left: 5px; 
+  width: 40px; height: 20px; border-radius: 50%; margin-left: 5px; 
 }
 
 .add-subsection { 
@@ -411,4 +415,18 @@ button:disabled,
 
 .remove-subsection { 
   background: #f44336; color: white; 
+}
+
+button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
+  padding: 8px 15px;
+}
+
+.small-btn { width: 40px; height: 20px; border-radius: 50%; background: #4CAF50; color: white; border: none; margin-left: 5px; }
+.small-btn.remove { background: #f44336; }
+
+.delete-btn { 
+  background: #20b2aa; color: white; border: none; padding: 5px 10px; 
+}
+.delete-btn:hover { 
+  background: #ff4444; 
 }

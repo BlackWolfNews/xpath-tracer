@@ -408,19 +408,19 @@ button:disabled,
   padding-left: 20px;
 }
 
-.highlight-btn {
-  background-color: #ff4444;
-  border: none;
-  color: white;
-  padding: 2px 6px;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  margin-right: 5px;
+.highlight-btn { 
+  width: 40px; 
+  height: 20px; 
+  border-radius: 50%; 
+  background: #20b2aa; 
+  color: white; 
+  border: none; 
+  margin-left: 
+  5px; 
 }
 
-.highlight-btn:hover {
-  background-color: #cc0000;
+.highlight-btn:hover { 
+  background: #4444ff; 
 }
 
 .entry { 
@@ -441,4 +441,32 @@ button:disabled,
 
 .small-btn.remove { 
   background: #f44336; 
+}
+
+#key-input, #url-input, #label-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
+  padding: 8px 15px;
+}
+
+.delete-btn { 
+  background: #20b2aa; color: white; border: none; padding: 5px 10px; 
+}
+
+.delete-btn:hover { 
+  background: #ff4444; 
+}
+
+#clear-highlights { 
+  background: #20b2aa; color: white; padding: 8px 15px; 
+}
+
+#clear-highlights:hover { 
+  background: #4444ff; 
 }
