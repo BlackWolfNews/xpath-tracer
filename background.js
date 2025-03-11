@@ -55,17 +55,14 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         reportError(errorMsg);
         console.error("Relay to management failed:", err);
       });
-  } else if (message.action === "setKey") {
-    dbPromise.then((db) => {
-      const transaction = db.transaction(["key"], "readwrite");
-      const store = transaction.objectStore("key");
-      store.put({ id: 1, value: message.password });
-      transaction.oncomplete = () => {
+    } else if (message.action === "setKey") {
+      dbPromise.then((db) => {
+        const tx = db.transaction(["keyStore"], "readwrite");
+        const store = tx.objectStore("keyStore");
+        store.put({ id: "encryptionKey", value: message.password });
         console.log("Encryption key stored in IndexedDB");
-        console.log("Key set, sending response");
         browser.runtime.sendMessage({ action: "keySet" });
-      };
-    });
+      });
   } else if (message.action === "saveData" && message.url && message.data) {
     dbPromise.then((db) => {
       const transaction = db.transaction(["xpaths"], "readwrite");

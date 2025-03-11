@@ -433,3 +433,31 @@ button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
 .delete-btn:hover { 
   background: #ff4444; 
 }
+
+#tabs { 
+  display: flex; 
+  gap: 10px; 
+}
+
+.tab-content { 
+  margin-top: 10px; 
+}
+
+#log-output { 
+  background: #f0f0f0; 
+  padding: 10px; 
+  max-height: 400px; 
+  overflow-y: auto; 
+}
+
+.paths { 
+  display: none; 
+} /* Hidden by default */
+
+.paths.visible { 
+  display: block; 
+}
+
+small { 
+  text-decoration: none; 
+} /* No underline */

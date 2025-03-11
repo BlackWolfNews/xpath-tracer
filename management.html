@@ -20,18 +20,18 @@
       padding: 20px;
       box-sizing: border-box;
     }
+    #tabs { display: flex; gap: 10px; }
+    .tab-content { margin-top: 10px; }
+    #log-output { background: #f0f0f0; padding: 10px; max-height: 400px; overflow-y: auto; }
     button {
       border-radius: 8px;
       padding: 5px 10px;
     }
-    input[type="text"],
-    select,
-    .popup {
+    input[type="text"], input[type="password"], select, .popup {
       border-radius: 4px;
       padding: 5px;
     }
-    #workflow-search,
-    #workflow-dropdown {
+    #workflow-search, #workflow-dropdown {
       text-align: center;
     }
     #workflow-search::placeholder {
@@ -59,19 +59,32 @@
 <body>
   <div id="management-container">
     <h1>XPath Tracer Management</h1>
-    <div id="container">
+    <div id="tabs">
+      <button id="workflow-tab" class="active">Workflows</button>
+      <button id="logs-tab">Logs</button>
+    </div>
+    <div id="workflow-content" class="tab-content">
       <div id="encryption-controls">
         <input type="text" id="workflow-search" placeholder="Search Workflows">
         <select id="workflow-dropdown"></select>
         <input type="password" id="key-input" placeholder="Enter encryption key">
-        <button id="save-key"> Set Key </button>
+        <button id="save-key">Set Key</button>
       </div>
       <input type="text" id="url-input" placeholder="Enter URL to start workflow">
-      <button id="start-workflow"> Start Workflow </button>
+      <button id="start-workflow">Start Workflow</button>
       <div id="workflow-list"></div>
+      <div id="error-message" style="color: red; text-align: center;"></div>
     </div>
-    <script src="management.js"></script>
-    <div id="error-message" style="color: red; text-align: center;"></div>
+    <div id="logs-content" class="tab-content" style="display: none;">
+      <pre id="log-output"></pre>
+    </div>
+    <dialog id="edit-dialog">
+      <input id="edit-label" type="text">
+      <button id="save-edit">Save</button>
+      <button id="cancel-edit">Cancel</button>
+    </dialog>
   </div>
+  <div class="paths"></div>
+  <script src="management.js"></script>
 </body>
 </html>
