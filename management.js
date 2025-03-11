@@ -16,144 +16,19 @@ function debounceLoadXPaths() {
   browser.runtime.sendMessage({ action: "loadXPaths" });
 }
 
-function renderWorkflowList() {
-  const list = document.getElementById("workflow-list");
-  console.log(
-    "Rendering workflow list, currentState:",
-    currentState,
-    "grouped:",
-    grouped
-  );
-  list.innerHTML = currentState && Object.keys(grouped[currentState] || {}).length
-    ? ""
-    : "<p>No workflow selected</p>";
-
-  if (currentState && grouped[currentState]) {
-    let totalEntries = 0;
-    let html = `<ul class="sortable-pages">`;
-    Object.keys(grouped[currentState]).forEach((page) => {
-      const sections = grouped[currentState][page];
-      const pageEntries = Object.values(sections).flatMap(subs => Object.values(subs).flat()).length;
-      totalEntries += pageEntries;
-      html += `<li class="page" data-page="${page}"><strong>${page}</strong> (${pageEntries} items)<button class="add-section small-btn">+</button><button class="remove-page small-btn remove">-</button><small>${Object.values(sections).flat()[0]?.url || "No URL"}</small><ul class="sortable-sections">`;
-      html += `<li class="section" data-section="${section}"><strong>${section}</strong><button class="add-subsection small-btn">+</button><button class="remove-section small-btn remove">-</button><ul class="sortable-subsections">`;
-      html += `<li class="subsection" data-subsection="${subsection}">${subsection}<button class="remove-subsection small-btn remove">-</button><ul>`;
-      html += `<li class="entry" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit-btn" data-id="${entry.id}">Edit</button><button class="delete-btn" data-id="${entry.id}">Delete</button></li>`;
-
-      Object.keys(sections).forEach((section) => {
-        if (section) { // Skip unnamed/empty sections
-          html += `<li class="section" data-section="${section}"><strong>${section}</strong>`;
-          html += `<button class="add-subsection" data-page="${page}" data-section="${section}">+</button><ul class="sortable-subsections">`;
-          const subsections = sections[section];
-          Object.keys(subsections).forEach((subsection) => {
-            if (subsection) { // Skip unnamed/empty subsections
-              html += `<li class="subsection" data-subsection="${subsection}">${subsection}<button class="remove-subsection" data-page="${page}" data-section="${section}" data-subsection="${subsection}">-</button><ul>`;
-              const entries = subsections[subsection];
-              if (entries.length === 0) {
-                html += `<li class="placeholder">Empty subsection</li>`;
-              } else {
-                entries.forEach((entry) => {
-                  const displayLabel = entry.customLabel || entry.label || entry.xpath;
-                  const displayValue = entry.encrypted ? "[Encrypted]" : entry.value || "";
-                  const paths = `XPath: ${entry.xpath}<br>CSS: ${entry.cssSelector || "N/A"}<br>Path: ${entry.cssPath || "N/A"}`;
-                  html += `<li class="entry" data-id="${entry.id}"><input type="checkbox" class="delete-checkbox" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit" data-id="${entry.id}">Edit</button><button class="delete" data-id="${entry.id}">Delete</button></li>`;
-                });
-              }
-              html += `</ul></li>`;
-            }
-          });
-          html += `</ul></li>`;
-        }
-      });
-      html += `</ul></li>`;
-    });
-    html += `</ul>`;
-    list.innerHTML = html;
-    console.log("Rendered list with total entries:", totalEntries);
-
-    // Reattach event listeners
-    document.querySelectorAll(".add-subsection").forEach((button) => {
-      button.addEventListener("click", () => {
-        const page = button.dataset.page;
-        const section = button.dataset.section;
-        const subsection = prompt("Subsection name (leave blank for none):");
-        if (subsection !== null) {
-          if (!grouped[currentState][page][section][subsection]) {
-            grouped[currentState][page][section][subsection] = [];
-          }
-          renderWorkflowList();
-        }
-      });
-    });
-
-    document.querySelectorAll(".remove-subsection").forEach((button) => {
-      button.addEventListener("click", () => {
-        const page = button.dataset.page;
-        const section = button.dataset.section;
-        const subsection = button.dataset.subsection;
-        if (confirm(`Remove subsection "${subsection}"?`)) {
-          delete grouped[currentState][page][section][subsection];
-          renderWorkflowList();
-        }
-      });
-    });
-
-    document.querySelectorAll(".delete").forEach((button) => {
-      button.addEventListener("click", () => {
-        const id = parseInt(button.dataset.id);
-        console.log("Delete clicked for ID:", id);
-        const entry = Object.values(grouped[currentState])
-          .flatMap((sections) => Object.values(sections).flat())
-          .find((e) => e.id === id);
-        if (confirm(`Delete ${entry?.customLabel || "entry"} (ID: ${id})?`)) {
-          browser.runtime.sendMessage({ action: "deleteData", data: { id } });
-          debounceLoadXPaths();
-        }
-      });
-    });
-
-    document.querySelectorAll(".edit").forEach((button) => {
-      button.addEventListener("click", () => {
-        const id = parseInt(button.dataset.id);
-        const entry = Object.values(grouped[currentState])
-          .flatMap((sections) => Object.values(sections).flat())
-          .find((e) => e.id === id);
-        showEditDialog(entry);
-      });
-    });
-
-    document.querySelectorAll(".add-section").forEach((button) => {
-      button.addEventListener("click", () => {
-        const page = button.parentElement.dataset.page;
-        const section = prompt("Section name:");
-        if (section) {
-          grouped[currentState][page][section] = {};
-          renderWorkflowList();
-        }
-      });
-    });
-    document.querySelectorAll(".remove-page").forEach((button) => {
-      button.addEventListener("click", () => {
-        const page = button.parentElement.dataset.page;
-        if (confirm(`Remove page "${page}"?`)) {
-          delete grouped[currentState][page];
-          renderWorkflowList();
-        }
-      });
-    });
-    document.querySelectorAll(".remove-section").forEach((button) => {
-      button.addEventListener("click", () => {
-        const page = button.parentElement.parentElement.dataset.page;
-        const section = button.parentElement.dataset.section;
-        if (confirm(`Remove section "${section}"?`)) {
-          delete grouped[currentState][page][section];
-          renderWorkflowList();
-        }
-      });
-    });
-
-    initSortable();
-  }
+function showEditDialog(entry) {
+  const dialog = document.getElementById("edit-dialog");
+  document.getElementById("edit-label").value = entry.customLabel || entry.label;
+  dialog.style.display = "block";
+  document.getElementById("save-edit").onclick = () => {
+    entry.customLabel = document.getElementById("edit-label").value;
+    browser.runtime.sendMessage({ action: "saveData", url: entry.url, data: entry });
+    dialog.style.display = "none";
+    renderWorkflowList();
+  };
+  document.getElementById("cancel-edit").onclick = () => {
+    dialog.style.display = "none";
+  };
 }
 
 function initSortable() {
@@ -239,6 +114,9 @@ function showEditDialog(entry) {
     browser.runtime.sendMessage({ action: "saveData", url: entry.url, data: entry });
     dialog.style.display = "none";
     renderWorkflowList();
+  };
+  document.getElementById("cancel-edit").onclick = () => {
+    dialog.style.display = "none";
   };
 }
 

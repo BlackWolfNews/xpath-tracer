@@ -310,6 +310,10 @@ browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
     ) {
       isCapturing = response.enabled;
       updateToggleButton();
+    } else if (message.action === "getManagementTab") {
+      browser.tabs.query({ url: browser.runtime.getURL("management.html") }).then((tabs) => {
+        browser.runtime.sendMessage({ tabId: tabs[0]?.id });
+      });
     }
   });
 });

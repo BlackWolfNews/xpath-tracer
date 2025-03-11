@@ -202,8 +202,7 @@ body {
   padding: 0 5px;
 }
 
-button,
-.button-group button {
+button, .button-group button {
   align-items: center;
   appearance: none;
   background-clip: padding-box;
@@ -237,8 +236,7 @@ button,
   z-index: 0;
 }
 
-button:before,
-.button-group button:before {
+button:before, .button-group button:before {
   background-image: linear-gradient(92.83deg, #20B2AA 0%, #008080 100%);
   content: "";
   display: block;
@@ -252,8 +250,7 @@ button:before,
   border-radius: 40px;
 }
 
-button:after,
-.button-group button:after {
+button:after, .button-group button:after {
   background-image: linear-gradient(#0A5C5A 0%, #003737 100%);
   bottom: 3px;
   content: "";
@@ -268,13 +265,11 @@ button:after,
   border-radius: 37px;
 }
 
-button:hover:not(:disabled):before,
-.button-group button:hover:not(:disabled):before {
+button:hover:not(:disabled):before, .button-group button:hover:not(:disabled):before {
   background: linear-gradient(92.83deg, #26C6C1 0%, #00A09A 100%);
 }
 
-button:hover:not(:disabled):after,
-.button-group button:hover:not(:disabled):after {
+button:hover:not(:disabled):after, .button-group button:hover:not(:disabled):after {
   bottom: 0;
   left: 0;
   right: 0;
@@ -283,19 +278,16 @@ button:hover:not(:disabled):after,
   opacity: 0;
 }
 
-button:active:not(:disabled),
-.button-group button:active:not(:disabled) {
+button:active:not(:disabled), .button-group button:active:not(:disabled) {
   color: #ccc;
 }
 
-button:active:not(:disabled):before,
-.button-group button:active:not(:disabled):before {
+button:active:not(:disabled):before, .button-group button:active:not(:disabled):before {
   background-image: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
     linear-gradient(92.83deg, #20B2AA 0%, #008080 100%);
 }
 
-button:active:not(:disabled):after,
-.button-group button:active:not(:disabled):after {
+button:active:not(:disabled):after, .button-group button:active:not(:disabled):after {
   background-image: linear-gradient(#0A5C5A 0%, #003737 100%);
   bottom: 3px;
   left: 3px;
@@ -303,19 +295,16 @@ button:active:not(:disabled):after,
   top: 3px;
 }
 
-button:disabled,
-.button-group button:disabled {
+button:disabled, .button-group button:disabled {
   cursor: default;
   opacity: 0.24;
 }
 
 @media (min-width: 768px) {
-  button,
-  .button-group button {
+  button, .button-group button {
     padding: 10px 25px;
   }
-  #workflow-search,
-  #workflow-dropdown {
+  #workflow-search, #workflow-dropdown {
     padding: 10px 25px;
   }
 }
@@ -344,16 +333,12 @@ button:disabled,
   background-color: #cc0000;
 }
 
-.sortable-pages,
-.sortable-sections,
-.sortable-entries {
+.sortable-pages, .sortable-sections, .sortable-entries {
   list-style: none;
   padding-left: 20px;
 }
 
-.page,
-.section,
-.entry {
+.page, .section, .entry {
   margin: 5px 0;
 }
 
@@ -424,7 +409,9 @@ button:disabled,
 }
 
 .entry { 
-  display: flex; flex-direction: column; margin: 5px 0; 
+  display: flex; 
+  flex-direction: column; 
+  margin: 5px 0; 
 }
 
 .entry label {
@@ -432,11 +419,18 @@ button:disabled,
   }
 
 .entry-buttons {
-  display: flex; gap: 5px; 
+  display: flex; 
+  gap: 5px; 
   }
 
 .small-btn {
-  width: 15px; height: 15px; border-radius: 50%; background: #4CAF50; color: white; border: none; cursor: pointer; 
+  width: 15px; 
+  height: 15px; 
+  border-radius: 50%; 
+  background: #4CAF50; 
+  color: white; 
+  border: none; 
+  cursor: pointer; 
 }
 
 .small-btn.remove { 
@@ -451,12 +445,16 @@ button:disabled,
   box-sizing: border-box;
 }
 
+
 button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
   padding: 8px 15px;
 }
 
 .delete-btn { 
-  background: #20b2aa; color: white; border: none; padding: 5px 10px; 
+  background: #20b2aa; 
+  color: white; 
+  border: none; 
+  padding: 5px 10px; 
 }
 
 .delete-btn:hover { 
@@ -464,9 +462,15 @@ button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
 }
 
 #clear-highlights { 
-  background: #20b2aa; color: white; padding: 8px 15px; 
+  background: #20b2aa; 
+  color: white; 
+  padding: 8px 15px; 
 }
 
 #clear-highlights:hover { 
   background: #4444ff; 
+}
+
+#new-page { 
+  text-align: center; 
 }
