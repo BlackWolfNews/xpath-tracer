@@ -83,7 +83,7 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         } else {
           const putRequest = store.put(entry);
           putRequest.onsuccess = () => {
-            console.log("Data saved to IndexedDB:", entry);
+            debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));
             loadXPaths();
           };
           putRequest.onerror = (err) => console.error("Save failed:", err);
@@ -201,5 +201,3 @@ function debugLog(message) {
   console.log(message); // For now, later to IndexedDB
   // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
 }
-// Use it:
-debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));

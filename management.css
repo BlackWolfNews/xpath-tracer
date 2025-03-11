@@ -400,3 +400,15 @@ button:disabled,
   display: block;
   margin: 10px 0;
 }
+
+.add-subsection, .remove-subsection { 
+  width: 20px; height: 20px; border-radius: 50%; margin-left: 5px; 
+}
+
+.add-subsection { 
+  background: #4CAF50; color: white; 
+}
+
+.remove-subsection { 
+  background: #f44336; color: white; 
+}

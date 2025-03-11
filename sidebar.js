@@ -317,6 +317,46 @@ browser.tabs.onActivated.addListener((activeInfo) => {
   console.log("Active tab changed to:", activeTabId);
 });
 
+function renderList(data) {
+  const list = document.getElementById("capture-list");
+  list.innerHTML = "";
+  data.forEach((entry) => {
+    const div = document.createElement("div");
+    div.className = "entry";
+    const label = document.createElement("label");
+    label.textContent = entry.customLabel || entry.label;
+    div.appendChild(label);
+    const btnDiv = document.createElement("div");
+    btnDiv.className = "entry-buttons";
+    const hBtn = document.createElement("button");
+    hBtn.textContent = "H";
+    hBtn.onclick = () => highlightElement(entry);
+    const addBtn = document.createElement("button");
+    addBtn.textContent = "+";
+    addBtn.className = "small-btn";
+    addBtn.onclick = () => addSectionPrompt(entry);
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "-";
+    removeBtn.className = "small-btn remove";
+    removeBtn.onclick = () => removeEntry(entry);
+    btnDiv.appendChild(hBtn);
+    btnDiv.appendChild(addBtn);
+    btnDiv.appendChild(removeBtn);
+    div.appendChild(btnDiv);
+    list.appendChild(div);
+  });
+}
+function addSectionPrompt(entry) {
+  const section = prompt("Section name (leave blank for none):");
+  if (section !== null) {
+    entry.section = section || "";
+    saveData(entry);
+  }
+}
+function removeEntry(entry) {
+  // Logic to remove from IndexedDB and re-render
+}
+
 browser.runtime.onMessage.addListener((message) => {
   console.log("Sidebar received message:", message);
   if (message.action === "urlChanged") {
@@ -375,12 +415,9 @@ getElement("workflow-dropdown").addEventListener("change", (e) => {
 // Show workflow dialog when sidebar loads
 showWorkflowDialog();
 
-console.log("Sidebar setup complete");
 updateToggleButton();
 
 function debugLog(message) {
   console.log(message); // For now, later to IndexedDB
   // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
 }
-// Use it:
-debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));

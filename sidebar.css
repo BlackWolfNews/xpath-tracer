@@ -422,3 +422,23 @@ button:disabled,
 .highlight-btn:hover {
   background-color: #cc0000;
 }
+
+.entry { 
+  display: flex; flex-direction: column; margin: 5px 0; 
+}
+
+.entry label {
+  font-weight: bold; 
+  }
+
+.entry-buttons {
+  display: flex; gap: 5px; 
+  }
+
+.small-btn {
+  width: 15px; height: 15px; border-radius: 50%; background: #4CAF50; color: white; border: none; cursor: pointer; 
+}
+
+.small-btn.remove { 
+  background: #f44336; 
+}

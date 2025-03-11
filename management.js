@@ -17,52 +17,81 @@ function debounceLoadXPaths() {
 }
 
 function renderWorkflowList() {
-  const list = getElement("workflow-list");
+  const list = document.getElementById("workflow-list");
   console.log(
     "Rendering workflow list, currentState:",
     currentState,
     "grouped:",
     grouped
   );
-  list.innerHTML =
-    currentState && Object.keys(grouped[currentState] || {}).length
-      ? ""
-      : "<p>No workflow selected</p>";
+  list.innerHTML = currentState && Object.keys(grouped[currentState] || {}).length
+    ? ""
+    : "<p>No workflow selected</p>";
+
   if (currentState && grouped[currentState]) {
     let totalEntries = 0;
     let html = `<ul class="sortable-pages">`;
-    for (const [page, sections] of Object.entries(grouped[currentState])) {
+    Object.keys(grouped[currentState]).forEach((page) => {
+      const sections = grouped[currentState][page];
       const pageEntries = Object.values(sections).flat().length;
       totalEntries += pageEntries;
       html += `<li class="page" data-page="${page}"><strong>${page}</strong> (${pageEntries} items)<small>${Object.values(sections).flat()[0]?.url || "No URL"}</small><ul class="sortable-sections">`;
-      for (const [section, entries] of Object.entries(sections)) {
-        html += `<li class="entry" data-id="${entry.id}" data-type="${entry.type || "unknown"}"><input type="checkbox" class="delete-checkbox" data-id="${entry.id}">${displayLabel} - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit" data-id="${entry.id}">Edit</button><button class="delete" data-id="${entry.id}">Delete</button></li>`;
-        if (entries.length === 0) {
-          html += `<li class="placeholder">Empty section</li>`;
-        } else {
-          entries.forEach((entry) => {
-            const displayLabel = entry.customLabel || entry.label || entry.xpath;
-            const displayValue = entry.encrypted ? "[Encrypted]" : entry.value || "";
-            const paths = `XPath: ${entry.xpath}<br>CSS: ${entry.cssSelector || "N/A"}<br>Path: ${entry.cssPath || "N/A"}`;
-            html += `<li class="entry" data-id="${entry.id}"><input type="checkbox" class="delete-checkbox" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit" data-id="${entry.id}">Edit</button><button class="delete" data-id="${entry.id}">Delete</button></li>`;
+
+      Object.keys(sections).forEach((section) => {
+        if (section) { // Skip unnamed/empty sections
+          html += `<li class="section" data-section="${section}"><strong>${section}</strong>`;
+          html += `<button class="add-subsection" data-page="${page}" data-section="${section}">+</button><ul class="sortable-subsections">`;
+          const subsections = sections[section];
+          Object.keys(subsections).forEach((subsection) => {
+            if (subsection) { // Skip unnamed/empty subsections
+              html += `<li class="subsection" data-subsection="${subsection}">${subsection}<button class="remove-subsection" data-page="${page}" data-section="${section}" data-subsection="${subsection}">-</button><ul>`;
+              const entries = subsections[subsection];
+              if (entries.length === 0) {
+                html += `<li class="placeholder">Empty subsection</li>`;
+              } else {
+                entries.forEach((entry) => {
+                  const displayLabel = entry.customLabel || entry.label || entry.xpath;
+                  const displayValue = entry.encrypted ? "[Encrypted]" : entry.value || "";
+                  const paths = `XPath: ${entry.xpath}<br>CSS: ${entry.cssSelector || "N/A"}<br>Path: ${entry.cssPath || "N/A"}`;
+                  html += `<li class="entry" data-id="${entry.id}"><input type="checkbox" class="delete-checkbox" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit" data-id="${entry.id}">Edit</button><button class="delete" data-id="${entry.id}">Delete</button></li>`;
+                });
+              }
+              html += `</ul></li>`;
+            }
           });
+          html += `</ul></li>`;
         }
-        html += `</ul></li>`;
-      }
+      });
       html += `</ul></li>`;
-    }
+    });
     html += `</ul>`;
     list.innerHTML = html;
     console.log("Rendered list with total entries:", totalEntries);
 
-    document.querySelectorAll(".section-title").forEach((title) => {
-      title.addEventListener("click", () => {
-        document.querySelectorAll(".section-title").forEach((t) => t.classList.remove("active"));
-        title.classList.add("active");
-        const sectionEl = title.parentElement;
-        currentPage = sectionEl.dataset.page;
-        currentSection = sectionEl.dataset.section;
-        console.log("Activated section:", currentPage, ">", currentSection);
+    // Reattach event listeners
+    document.querySelectorAll(".add-subsection").forEach((button) => {
+      button.addEventListener("click", () => {
+        const page = button.dataset.page;
+        const section = button.dataset.section;
+        const subsection = prompt("Subsection name (leave blank for none):");
+        if (subsection !== null) {
+          if (!grouped[currentState][page][section][subsection]) {
+            grouped[currentState][page][section][subsection] = [];
+          }
+          renderWorkflowList();
+        }
+      });
+    });
+
+    document.querySelectorAll(".remove-subsection").forEach((button) => {
+      button.addEventListener("click", () => {
+        const page = button.dataset.page;
+        const section = button.dataset.section;
+        const subsection = button.dataset.subsection;
+        if (confirm(`Remove subsection "${subsection}"?`)) {
+          delete grouped[currentState][page][section][subsection];
+          renderWorkflowList();
+        }
       });
     });
 
@@ -332,11 +361,8 @@ browser.runtime.onMessage.addListener((message) => {
   }
 });
 
-console.log("Management setup complete");
 
 function debugLog(message) {
   console.log(message); // For now, later to IndexedDB
   // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
 }
-// Use it:
-debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));
