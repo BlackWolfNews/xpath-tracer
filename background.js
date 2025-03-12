@@ -64,31 +64,29 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         console.log("Encryption key stored in IndexedDB");
         browser.runtime.sendMessage({ action: "keySet" });
       });
-  } else if (message.action === "saveData" && message.url && message.data) {
-    const entry = message.data;
-    entry.id = entry.id || Date.now();
-    entry.xpathSuccess = entry.xpathSuccess || 0;
-    entry.xpathFails = entry.xpathFails || 0;
-    entry.cssSelectorSuccess = entry.cssSelectorSuccess || 0;
-    entry.cssSelectorFails = entry.cssSelectorFails || 0;
-    entry.cssPathSuccess = entry.cssPathSuccess || 0;
-    entry.cssPathFails = entry.cssPathFails || 0;
-    entry.lastUpdated = Date.now();
-    dbPromise.then((db) => {
-      const transaction = db.transaction(["xpaths"], "readwrite");
-      const store = transaction.objectStore("xpaths");
-      const entry = message.data;
-      entry.url = message.url;
-      entry.id = entry.id || Date.now();
-      const checkRequest = store.getAll();
-      checkRequest.onsuccess = () => {
-        const existing = checkRequest.result.find(
-          (e) => e.xpath === entry.xpath && e.url === entry.url
-        );
-        if (existing) {
-          console.log("Duplicate entry skipped:", entry.xpath, entry.url);
-        } else {
-          const putRequest = store.put(entry);
+    } else if (message.action === "saveData" && message.url && message.data) {
+      dbPromise.then((db) => {
+        const transaction = db.transaction(["xpaths"], "readwrite");
+        const store = transaction.objectStore("xpaths");
+        const entry = message.data;
+        entry.url = message.url;
+        entry.id = entry.id || Date.now();
+        entry.xpathSuccess = entry.xpathSuccess || 0;
+        entry.xpathFails = entry.xpathFails || 0;
+        entry.cssSelectorSuccess = entry.cssSelectorSuccess || 0;
+        entry.cssSelectorFails = entry.cssSelectorFails || 0;
+        entry.cssPathSuccess = entry.cssPathSuccess || 0;
+        entry.cssPathFails = entry.cssPathFails || 0;
+        entry.lastUpdated = Date.now();
+        const checkRequest = store.getAll();
+        checkRequest.onsuccess = () => {
+          const existing = checkRequest.result.find(
+            (e) => e.xpath === entry.xpath && e.url === entry.url
+          );
+          if (existing) {
+            console.log("Duplicate entry skipped:", entry.xpath, entry.url);
+          } else {
+            const putRequest = store.put(entry);
           putRequest.onsuccess = () => {
             debugLog("Data saved to IndexedDB: " + JSON.stringify(entry));
             loadXPaths();

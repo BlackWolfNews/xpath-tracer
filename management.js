@@ -51,7 +51,18 @@ function renderWorkflowList() {
                 entries.forEach((entry) => {
                   const displayLabel = entry.customLabel || entry.label || entry.xpath;
                   const displayValue = entry.encrypted ? "[Encrypted]" : entry.value || "";
-                  const paths = `<div class="paths" style="display: none;">XPath: ${entry.xpath}<br>CSS Selector: ${entry.cssSelector || "N/A"}<br>CSS Path: ${entry.cssPath || "N/A"}</div>`;
+                  const xpathSpeed = Math.min(10, Math.max(1, 10 - Math.floor((entry.xpathTime || 0) / 1)));
+                  const cssSpeed = Math.min(10, Math.max(1, 10 - Math.floor((entry.cssSelectorTime || 0) / 1)));
+                  const pathSpeed = Math.min(10, Math.max(1, 10 - Math.floor((entry.cssPathTime || 0) / 1)));
+                  const xpathBars = `<span class="speed-bars" data-speed="${xpathSpeed}" style="${entry.xpathFails > entry.xpathSuccess ? 'opacity: 0.5;' : ''}">${'█'.repeat(xpathSpeed)}</span>`;
+                  const cssBars = `<span class="speed-bars" data-speed="${cssSpeed}" style="${entry.cssSelectorFails > entry.cssSelectorSuccess ? 'opacity: 0.5;' : ''}">${'█'.repeat(cssSpeed)}</span>`;
+                  const pathBars = `<span class="speed-bars" data-speed="${pathSpeed}" style="${entry.cssPathFails > entry.cssPathSuccess ? 'opacity: 0.5;' : ''}">${'█'.repeat(pathSpeed)}</span>`;
+                  const paths = `
+                    <div class="paths" style="display: none;">
+                      <button class="path-btn" data-type="xpath" data-id="${entry.id}">XPath (${entry.xpathSuccess}/${entry.xpathFails}) ${xpathBars}</button><br>
+                      <button class="path-btn" data-type="cssSelector" data-id="${entry.id}">CSS Selector (${entry.cssSelectorSuccess}/${entry.cssSelectorFails}) ${cssBars}</button><br>
+                      <button class="path-btn" data-type="cssPath" data-id="${entry.id}">CSS Path (${entry.cssPathSuccess}/${entry.cssPathFails}) ${pathBars}</button>
+                    </div>`;
                   html += `<li class="entry" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<button class="show-paths">Paths</button>${paths}<span class="grab">^v</span><button class="edit-btn" data-id="${entry.id}">Edit</button><button class="delete-btn" data-id="${entry.id}">Delete</button></li>`;
                 });
               }
@@ -219,7 +230,23 @@ function initSortable() {
       pathsDiv.style.display = pathsDiv.style.display === "none" ? "block" : "none";
     });
   });
-}
+  document.querySelectorAll(".path-btn").forEach(button => {
+    button.addEventListener("click", () => {
+      const id = button.dataset.id;
+      const type = button.dataset.type;
+      const entry = Object.values(grouped[currentState]).flatMap(s => Object.values(s).flat()).find(e => e.id === parseInt(id));
+      browser.tabs.query({ active: true, currentWindow: true }).then(tabs => {
+        browser.tabs.sendMessage(tabs[0].id, {
+          action: "highlight",
+          xpath: entry.xpath,
+          cssSelector: entry.cssSelector,
+          cssPath: entry.cssPath,
+          type: type
+        });
+      });
+    });
+  });
+  }
 
 function updateDropdown(filtered = Object.keys(grouped)) {
   const dropdown = getElement("workflow-dropdown");
