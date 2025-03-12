@@ -35,12 +35,14 @@ function generateCSSPath(element) {
       selector = `#${current.id}`;
       path.unshift(selector);
       break;
+    } else if (current.className) {
+      selector += `.${current.className.split(" ")[0]}`;
     }
-    const siblings = Array.from(current.parentNode.childNodes).filter(
-      (e) => e.nodeType === 1 && e.tagName === current.tagName
+    const siblings = Array.from(current.parentNode.children).filter(
+      (e) => e.tagName === current.tagName && e !== current
     );
-    if (siblings.length > 1) {
-      const index = siblings.indexOf(current) + 1;
+    if (siblings.length) {
+      const index = Array.from(current.parentNode.children).indexOf(current) + 1;
       selector += `:nth-child(${index})`;
     }
     path.unshift(selector);
@@ -116,6 +118,9 @@ browser.runtime.onMessage.addListener((message) => {
       xpath: message.xpath,
       results: { xpath: results.xpath, cssSelector: results.cssSelector, cssPath: results.cssPath, xpathTime: results.xpathTime, cssSelectorTime: results.cssSelectorTime, cssPathTime: results.cssPathTime }
     });
+  } else if (message.action === "altClick" && !message.handled) {
+    message.handled = true; // Prevent duplicate sends
+    browser.runtime.sendMessage({ data: message.data, url: message.url });
   } else if (message.action === "clearHighlights") {
     document.querySelectorAll("*").forEach((el) => {
       if (el.style.border === "2px solid #4444ff") el.style.border = "";
