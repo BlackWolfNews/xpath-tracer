@@ -111,6 +111,11 @@ browser.runtime.onMessage.addListener((message) => {
     results.cssPath = highlightByCSSPath(message.cssPath);
     results.cssPathTime = performance.now() - start;
     console.log("Highlight results:", results);
+    browser.runtime.sendMessage({
+      action: "updateStats",
+      xpath: message.xpath,
+      results: { xpath: results.xpath, cssSelector: results.cssSelector, cssPath: results.cssPath, xpathTime: results.xpathTime, cssSelectorTime: results.cssSelectorTime, cssPathTime: results.cssPathTime }
+    });
   } else if (message.action === "clearHighlights") {
     document.querySelectorAll("*").forEach((el) => {
       if (el.style.border === "2px solid #4444ff") el.style.border = "";

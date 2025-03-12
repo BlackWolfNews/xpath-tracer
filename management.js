@@ -207,6 +207,12 @@ function initSortable() {
       },
     });
   });
+  document.querySelectorAll(".show-paths").forEach(button => {
+    button.addEventListener("click", () => {
+      const pathsDiv = button.nextElementSibling;
+      pathsDiv.style.display = pathsDiv.style.display === "none" ? "block" : "none";
+    });
+  });
 }
 
 function updateDropdown(filtered = Object.keys(grouped)) {

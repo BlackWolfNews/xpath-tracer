@@ -43,7 +43,8 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         reportError(errorMsg);
         console.error("Relay to management failed:", err);
       });
-  } else if (message.action === "relayData") {
+  } 
+  else if (message.action === "relayData") {
     console.log("Relaying sidebar data to management");
     browser.runtime
       .sendMessage({ data: message.data, url: message.url })
@@ -64,6 +65,15 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         browser.runtime.sendMessage({ action: "keySet" });
       });
   } else if (message.action === "saveData" && message.url && message.data) {
+    const entry = message.data;
+    entry.id = entry.id || Date.now();
+    entry.xpathSuccess = entry.xpathSuccess || 0;
+    entry.xpathFails = entry.xpathFails || 0;
+    entry.cssSelectorSuccess = entry.cssSelectorSuccess || 0;
+    entry.cssSelectorFails = entry.cssSelectorFails || 0;
+    entry.cssPathSuccess = entry.cssPathSuccess || 0;
+    entry.cssPathFails = entry.cssPathFails || 0;
+    entry.lastUpdated = Date.now();
     dbPromise.then((db) => {
       const transaction = db.transaction(["xpaths"], "readwrite");
       const store = transaction.objectStore("xpaths");
