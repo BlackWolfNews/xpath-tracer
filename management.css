@@ -430,8 +430,17 @@ button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
   background: #20b2aa; 
   color: white; 
 }
+
 .delete-btn:hover { 
   background: #ff4444; 
+}
+
+.paths { 
+  margin-top: 5px; 
+}
+
+small { 
+  text-decoration: none; 
 }
 
 #tabs { 
@@ -457,7 +466,3 @@ button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
 .paths.visible { 
   display: block; 
 }
-
-small { 
-  text-decoration: none; 
-} /* No underline */

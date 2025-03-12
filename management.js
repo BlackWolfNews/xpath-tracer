@@ -51,8 +51,8 @@ function renderWorkflowList() {
                 entries.forEach((entry) => {
                   const displayLabel = entry.customLabel || entry.label || entry.xpath;
                   const displayValue = entry.encrypted ? "[Encrypted]" : entry.value || "";
-                  const paths = `XPath: ${entry.xpath}<br>CSS: ${entry.cssSelector || "N/A"}<br>Path: ${entry.cssPath || "N/A"}`;
-                  html += `<li class="entry" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<br><small>${paths}</small><span class="grab">^v</span><button class="edit-btn" data-id="${entry.id}">Edit</button><button class="delete-btn" data-id="${entry.id}">Delete</button></li>`;
+                  const paths = `<div class="paths" style="display: none;">XPath: ${entry.xpath}<br>CSS Selector: ${entry.cssSelector || "N/A"}<br>CSS Path: ${entry.cssPath || "N/A"}</div>`;
+                  html += `<li class="entry" data-id="${entry.id}">${displayLabel} (${entry.type || "unknown"}) - ${displayValue}<button class="show-paths">Paths</button>${paths}<span class="grab">^v</span><button class="edit-btn" data-id="${entry.id}">Edit</button><button class="delete-btn" data-id="${entry.id}">Delete</button></li>`;
                 });
               }
               html += `</ul></li>`;
@@ -140,6 +140,12 @@ function renderWorkflowList() {
       });
     });
     initSortable();
+    document.querySelectorAll(".show-paths").forEach(button => {
+      button.addEventListener("click", () => {
+        const pathsDiv = button.nextElementSibling;
+        pathsDiv.style.display = pathsDiv.style.display === "none" ? "block" : "none";
+      });
+    });
   }
 }
 
