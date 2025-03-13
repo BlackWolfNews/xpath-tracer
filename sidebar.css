@@ -123,7 +123,7 @@ button, .button-group button {
   font-weight: 800;
   justify-content: center;
   line-height: 20px;
-  margin: 5px;
+  margin: 5px; /* Uniform 5px margin */
   min-height: 40px;
   outline: none;
   overflow: visible;
@@ -217,35 +217,43 @@ button:disabled {
   width: 40px;
   height: 20px;
   padding: 0;
+  margin: 5px; /* Consistent margin */
 }
 
 .highlight-btn:hover:not(:disabled) {
-  border: 3px solid #4444ff;
+  box-shadow: 0 0 5px 5px #4444ff;
+}
+
+#highlight-toggle:hover:not(:disabled) {
+  box-shadow: 0 0 5px 5px #4444ff;
 }
 
 #clear-highlights {
   padding: 10px 20px;
+  margin: 5px; /* Consistent margin */
 }
 
 #clear-highlights:hover:not(:disabled) {
-  border: 3px solid #4444ff;
+  box-shadow: 0 0 5px 5px #4444ff;
 }
 
 .delete {
   padding: 2px 8px;
   font-size: 12px;
+  margin: 5px; /* Consistent margin */
 }
 
 .delete:hover:not(:disabled) {
-  border: 3px solid #cc0000;
+  box-shadow: 0 0 5px 5px #cc0000;
 }
 
 .delete-btn {
   padding: 5px 10px;
+  margin: 5px; /* Consistent margin */
 }
 
 .delete-btn:hover:not(:disabled) {
-  border: 3px solid #cc0000;
+  box-shadow: 0 0 5px 5px #cc0000;
 }
 
 .small-btn {
@@ -255,6 +263,7 @@ button:disabled {
   padding: 0;
   background: #4CAF50;
   text-align: center;
+  margin: 5px; /* Consistent margin */
 }
 
 .small-btn:before {

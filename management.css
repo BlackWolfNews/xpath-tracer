@@ -121,7 +121,7 @@ button, .button-group button {
   font-weight: 800;
   justify-content: center;
   line-height: 20px;
-  margin: 5px;
+  margin: 5px; /* Uniform 5px margin */
   min-height: 40px;
   outline: none;
   overflow: visible;
@@ -214,18 +214,20 @@ button:disabled {
 .delete {
   padding: 2px 8px;
   font-size: 12px;
+  margin: 5px; /* Consistent margin */
 }
 
 .delete:hover:not(:disabled) {
-  border: 3px solid #cc0000;
+  box-shadow: 0 0 5px 5px #cc0000;
 }
 
 .delete-btn {
   padding: 5px 10px;
+  margin: 5px; /* Consistent margin */
 }
 
 .delete-btn:hover:not(:disabled) {
-  border: 3px solid #cc0000;
+  box-shadow: 0 0 5px 5px #cc0000;
 }
 
 .add-subsection,
@@ -233,6 +235,7 @@ button:disabled {
   width: 40px;
   height: 20px;
   padding: 0;
+  margin: 5px; /* Consistent margin */
 }
 
 .small-btn {
@@ -240,25 +243,10 @@ button:disabled {
   height: 20px;
   border-radius: 10px;
   padding: 0;
-  background: #4CAF50;
+  background: #18ece2;
   text-align: center;
-}
-
-.small-btn:before {
-  background: #4CAF50;
-  border-radius: 10px;
-}
-
-.small-btn:after {
-  display: none;
-}
-
-.small-btn.remove {
-  background: #f44336;
-}
-
-.small-btn.remove:before {
-  background: #f44336;
+  margin: 5px; /* Consistent margin */
+  text-decoration: none;
 }
 
 /* General UI */
@@ -375,7 +363,7 @@ small {
   color: white;
   border: none;
   padding: 2px 5px;
-  margin: 2px 0;
+  margin: 5px; /* Consistent margin */
 }
 
 .path-btn:hover {
