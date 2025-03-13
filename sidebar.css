@@ -403,6 +403,7 @@ button:disabled, .button-group button:disabled {
   border: none; 
   margin-left: 5px; 
   position: relative; /* Keep pseudo-elements in check */
+  z-index: 1;
 }
 
 .highlight-btn:before,
