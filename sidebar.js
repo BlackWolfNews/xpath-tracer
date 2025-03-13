@@ -7,6 +7,7 @@ let isCapturing = false;
 let activeTabId = null;
 let pendingData = null;
 let managementTabId = null;
+let currentWorkflow = "Alabama";
 
 function getElement(id) {
   const el = document.getElementById(id);
@@ -83,10 +84,35 @@ function showWorkflowDialog() {
 function showPageDialog(url, tabId) {
   const dialog = getElement("workflow-dialog");
   dialog.innerHTML = `
-    <h3>New Page Detected</h3>
-    <label>Page Name: <input id="page-name" type="text" value="${currentPage || ''}"></label><br>
-    <label>Section Name: <input id="section-name" type="text" value="${currentSection || ''}"></label><br>
-    <label>Subsection Name: <input id="subsection-name" type="text"></label><br>
+    <h3>XPath Tracer</h3>
+    <p>Workflow: ${currentWorkflow}</p>
+    <div class="field-group">
+      <label for="page-name">Page Name</label>
+      <input type="text" id="page-name" value="${currentPage || ''}">
+      <div class="button-group">
+        <button class="edit-btn">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label for="section-name">Section Name</label>
+      <input type="text" id="section-name" value="${currentSection || ''}">
+      <div class="button-group">
+        <button class="edit-btn">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label for="subsection-name">Subsection Name</label>
+      <input type="text" id="subsection-name">
+      <div class="button-group">
+        <button class="edit-btn">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
     <button id="save-page">Save</button>
     <button id="cancel-page">Skip</button>
   `;
@@ -110,6 +136,7 @@ function showPageDialog(url, tabId) {
         subsection,
         url,
       });
+      getElement("label-input").disabled = true; // Deactivate Custom Label
       dialog.style.display = "none";
     } else {
       alert("Please fill in Page and Section names.");
@@ -246,6 +273,7 @@ getElement("save-label").addEventListener("click", () => {
       });
       pendingData = null;
       getElement("label-input").value = "";
+      getElement("label-input").disabled = true; // Deactivate Custom Label
       getElement("label-entry").classList.remove("active");
     }
   }

@@ -4,103 +4,14 @@ body {
   padding: 10px;
 }
 
-#encryption-controls {
+#encryption-controls,
+#export-controls,
+#capture-controls,
+#workflow-selector,
+#encryption-controls,
+#url-input {
   margin-bottom: 10px;
   text-align: center;
-}
-
-#encryption-controls input {
-  display: block;
-  width: 80%;
-  margin: 0 auto 5px auto;
-  padding: 5px;
-}
-
-#export-controls, #capture-controls {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-#workflow-selector {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-#workflow-search,
-#workflow-dropdown {
-  align-items: center;
-  appearance: none;
-  background-clip: padding-box;
-  background-color: #FFFFFF;
-  border-style: none;
-  box-sizing: border-box;
-  color: #000000;
-  display: block;
-  flex-direction: row;
-  flex-shrink: 0;
-  font-family: Eina01, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  justify-content: center;
-  line-height: 20px;
-  margin: 0 auto 5px auto;
-  min-height: 40px;
-  outline: none;
-  overflow: visible;
-  padding: 10px 20px;
-  position: relative;
-  text-align: left;
-  text-decoration: none;
-  user-select: text;
-  -webkit-user-select: text;
-  touch-action: manipulation;
-  width: 80%;
-  z-index: 0;
-}
-
-#workflow-search:before,
-#workflow-dropdown:before {
-  background-image: linear-gradient(92.83deg, #20B2AA 0%, #008080 100%);
-  content: "";
-  display: block;
-  height: 100%;
-  left: 0;
-  overflow: hidden;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: -2;
-  border-radius: 40px;
-}
-
-#workflow-search:after,
-#workflow-dropdown:after {
-  background-color: #FFFFFF;
-  bottom: 3px;
-  content: "";
-  display: block;
-  left: 3px;
-  overflow: hidden;
-  position: absolute;
-  right: 3px;
-  top: 3px;
-  transition: all 100ms ease-out;
-  z-index: -1;
-  border-radius: 37px;
-}
-
-#workflow-search:hover:not(:disabled):before,
-#workflow-dropdown:hover:not(:disabled):before {
-  background: linear-gradient(92.83deg, #26C6C1 0%, #00A09A 100%);
-}
-
-#workflow-search:hover:not(:disabled):after,
-#workflow-dropdown:hover:not(:disabled):after {
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: 0;
-  transition-timing-function: ease-in;
 }
 
 /* Base Button Style */
@@ -121,7 +32,7 @@ button, .button-group button {
   font-weight: 800;
   justify-content: center;
   line-height: 20px;
-  margin: 5px; /* Uniform 5px margin */
+  margin: 5px;
   min-height: 40px;
   outline: none;
   overflow: visible;
@@ -205,16 +116,12 @@ button:disabled {
   button, .button-group button {
     padding: 10px 25px;
   }
-  #workflow-search, #workflow-dropdown {
-    padding: 10px 25px;
-  }
 }
 
 /* Specific Button Overrides */
 .delete {
   padding: 2px 8px;
   font-size: 12px;
-  margin: 5px; /* Consistent margin */
 }
 
 .delete:hover:not(:disabled) {
@@ -223,7 +130,6 @@ button:disabled {
 
 .delete-btn {
   padding: 5px 10px;
-  margin: 5px; /* Consistent margin */
 }
 
 .delete-btn:hover:not(:disabled) {
@@ -235,7 +141,6 @@ button:disabled {
   width: 40px;
   height: 20px;
   padding: 0;
-  margin: 5px; /* Consistent margin */
 }
 
 .small-btn {
@@ -243,10 +148,59 @@ button:disabled {
   height: 20px;
   border-radius: 10px;
   padding: 0;
-  background: #18ece2;
   text-align: center;
-  margin: 5px; /* Consistent margin */
-  text-decoration: none;
+}
+
+#key-input {
+  padding: 8px;
+  border: ridge #00ffffcf;
+  border-radius: 37px;
+  box-sizing: border-box;
+  background-color: #18ece2;
+}
+
+/* Input and Dropdown Theme */
+input[type="text"], select {
+  padding: 8px;
+  border: ridge #00ffffcf;
+  border-radius: 37px;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: #18ece2;
+}
+
+/* Popup */
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.popup h3 {
+  margin-top: 0;
+}
+
+.popup label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+.popup .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.popup .button-group {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
 }
 
 /* General UI */
@@ -301,42 +255,6 @@ button:disabled {
   margin: 0 auto;
 }
 
-#encryption-controls, #url-input {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-#key-input, #url-input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-}
-.popup h3 {
-  margin-top: 0;
-}
-.popup label {
-  display: block;
-  margin: 10px 0;
-}
-
-button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
-  padding: 8px 15px;
-}
-
 .paths {
   margin-top: 5px;
 }
@@ -359,11 +277,7 @@ small {
 }
 
 .path-btn {
-  background: #20b2aa;
-  color: white;
-  border: none;
   padding: 2px 5px;
-  margin: 5px; /* Consistent margin */
 }
 
 .path-btn:hover {
