@@ -1,54 +1,98 @@
 console.log("content.js loaded");
 
 let isCapturing = false;
+let lastClickedElement = null; // Add this at the top of content.js
+
+const observer = new MutationObserver((mutations) => {
+  if (isCapturing) {
+    console.log("DOM changed—rechecking paths");
+    if (lastClickedElement) {
+      const data = getElementData({ target: lastClickedElement });
+      browser.runtime.sendMessage({
+        action: "updatePaths",
+        data: data,
+        url: window.location.href
+      });
+    }
+    browser.runtime.sendMessage({ action: "domChanged" });
+  }
+});
+observer.observe(document.body, {
+  childList: true,    // Watch for added/removed elements
+  subtree: true,      // Watch the whole DOM tree
+  attributes: true    // Watch for attribute changes (e.g., class updates)
+});
 
 function generateXPath(element) {
-  if (element.id) return `//*[@id="${element.id}"]`;
-  if (element === document.body) return "/html/body";
-  let ix = 0;
-  const siblings = element.parentNode
-    ? Array.from(element.parentNode.childNodes).filter((e) => e.nodeType === 1)
-    : [];
+  if (!element) return '';
+  if (element.id) return `//*[@id="${element.id}"]`; // Use ID if available
+  if (element === document.body) return '/html/body';
+
   const tagName = element.tagName.toLowerCase();
-  for (let i = 0; i < siblings.length; i++) {
-    const sibling = siblings[i];
-    if (sibling === element) {
-      const path = generateXPath(element.parentNode) + `/${tagName}[${ix + 1}]`;
-      if (element.className) {
-        const classes = element.className.split(" ").filter((c) => c);
-        if (classes.length) return `${path}[contains(@class, "${classes[0]}")]`;
-      }
-      return path;
+  let path = '';
+  let current = element;
+
+  while (current && current !== document.body) {
+    let selector = tagName;
+    // Add unique attributes
+    if (current.id) {
+      return `//*[@id="${current.id}"]`;
+    } else if (current.name) {
+      selector += `[name="${current.name}"]`;
+    } else if (current.className) {
+      const classes = current.className.split(" ").filter(c => c).join(".");
+      selector += `[contains(@class, "${classes}")]`;
     }
-    if (sibling.nodeName.toLowerCase() === tagName) ix++;
+
+    // Add index only if needed
+    const siblings = Array.from(current.parentNode.children).filter(
+      sib => sib.tagName.toLowerCase() === tagName
+    );
+    if (siblings.length > 1) {
+      const index = siblings.indexOf(current) + 1;
+      selector += `[${index}]`;
+    }
+
+    path = `/${selector}${path}`;
+    current = current.parentNode;
   }
-  return "";
+
+  return path ? `//${path.slice(1)}` : '/html/body';
 }
 
 function generateCSSPath(element) {
-  if (element === document.body) return "body";
-  const path = [];
+  if (!element) return '';
+  if (element === document.body) return 'body';
+
+  let path = [];
   let current = element;
+
   while (current && current !== document.body) {
     let selector = current.tagName.toLowerCase();
     if (current.id) {
-      selector = `#${current.id}`;
-      path.unshift(selector);
+      path.unshift(`#${current.id}`);
       break;
+    } else if (current.name) {
+      selector += `[name="${current.name}"]`;
     } else if (current.className) {
-      selector += `.${current.className.split(" ")[0]}`;
+      const classes = current.className.split(" ").filter(c => c).join(".");
+      selector += `.${classes}`;
     }
+
+    // Add index only if needed
     const siblings = Array.from(current.parentNode.children).filter(
-      (e) => e.tagName === current.tagName && e !== current
+      sib => sib.tagName === current.tagName
     );
-    if (siblings.length) {
+    if (siblings.length > 1) {
       const index = Array.from(current.parentNode.children).indexOf(current) + 1;
       selector += `:nth-child(${index})`;
     }
+
     path.unshift(selector);
     current = current.parentNode;
   }
-  return "body > " + path.join(" > ");
+
+  return path.length ? path.join(" > ") : 'body';
 }
 
 function getElementData(event) {
@@ -80,9 +124,11 @@ function getElementData(event) {
     outerHTML: element.outerHTML,
     cssSelector: element.id
       ? `#${element.id}`
+      : element.name
+      ? `[name="${element.name}"]`
       : element.className
       ? `.${element.className.split(" ")[0]}`
-      : null,
+      : element.tagName.toLowerCase(), // Fallback to tag
     cssPath,
   };
 }
@@ -91,6 +137,7 @@ document.addEventListener("click", (event) => {
   if (isCapturing && event.altKey) {
     event.preventDefault();
     const data = getElementData(event);
+    lastClickedElement = event.target; // Add this line
     console.log("Alt+Click detected:", { data, url: window.location.href });
     browser.runtime.sendMessage({ data, url: window.location.href });
   }
@@ -189,17 +236,4 @@ function highlightByCSSPath(path) {
     console.error("CSS path error:", err);
     return false;
   }
-}
-
-const observer = new MutationObserver(() => {
-  if (isCapturing) {
-    console.log("DOM changed—recheck XPaths");
-    browser.runtime.sendMessage({ action: "domChanged" });
-  }
-});
-observer.observe(document.body, { childList: true, subtree: true });
-
-function debugLog(message) {
-  console.log(message); // For now, later to IndexedDB
-  // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
 }

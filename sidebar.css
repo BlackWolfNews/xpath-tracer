@@ -202,7 +202,7 @@ body {
   padding: 0 5px;
 }
 
-button, .button-group button {
+button, .button-group button, .highlight-btn {
   align-items: center;
   appearance: none;
   background-clip: padding-box;
@@ -368,6 +368,7 @@ button:disabled, .button-group button:disabled {
   cursor: pointer;
   border-radius: 4px;
   margin-left: 5px;
+  z-index: 1;
 }
 
 .delete:hover {
@@ -400,8 +401,13 @@ button:disabled, .button-group button:disabled {
   background: #20b2aa; 
   color: white; 
   border: none; 
-  margin-left: 
-  5px; 
+  margin-left: 5px; 
+  position: relative; /* Keep pseudo-elements in check */
+}
+
+.highlight-btn:before,
+.highlight-btn:after {
+  display: none; /* Disable the general button pseudo-elements */
 }
 
 .highlight-btn:hover { 
@@ -465,6 +471,13 @@ button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
   background: #20b2aa; 
   color: white; 
   padding: 8px 15px; 
+  position: relative; /* Keep pseudo-elements in check */
+  z-index: 1;
+}
+
+#clear-highlights:before,
+#clear-highlights:after {
+  display: none; /* Disable the general button pseudo-elements */
 }
 
 #clear-highlights:hover { 
