@@ -47,14 +47,21 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   // Handle Alt-Click data with "relayData" action from content.js, relay and save it
   else if (message.action === "relayData") {
     console.log("Relaying sidebar data to management");
-    browser.runtime.sendMessage({ data: message.data, url: message.url });
+    browser.runtime
+      .sendMessage({ data: message.data, url: message.url })
+      .then(() => console.log("Relay to management succeeded"))
+      .catch((err) => {
+        const errorMsg = err?.message ? "Relay failed: " + err.message : "Relay failed: Unknown";
+        reportError(errorMsg);
+        console.error("Relay to management failed:", err);
+      });
   
     dbPromise.then((db) => {
       const xpathTx = db.transaction(["xpaths"], "readwrite");
       const xpathStore = xpathTx.objectStore("xpaths");
       const entry = message.data;
       entry.url = message.url;
-      entry.id = entry.id || `${entry.url}-${entry.xpath}`; // Unique ID per path+URL
+      entry.id = entry.id || `${entry.url}-${entry.xpath || Date.now()}`; // Consistent ID, fallback if no xpath
       // Initialize stats if new
       entry.xpathSuccess = entry.xpathSuccess || 0;
       entry.xpathFails = entry.xpathFails || 0;
@@ -68,13 +75,15 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       getRequest.onsuccess = () => {
         const existing = getRequest.result;
         if (existing) {
-          // Update stats only
-          existing.xpathSuccess += entry.results.xpath ? 1 : 0;
-          existing.xpathFails += entry.results.xpath ? 0 : 1;
-          existing.cssSelectorSuccess += entry.results.cssSelector ? 1 : 0;
-          existing.cssSelectorFails += entry.results.cssSelector ? 0 : 1;
-          existing.cssPathSuccess += entry.results.cssPath ? 1 : 0;
-          existing.cssPathFails += entry.results.cssPath ? 0 : 1;
+          // Update stats only if results provided
+          if (entry.results) {
+            existing.xpathSuccess += entry.results.xpath ? 1 : 0;
+            existing.xpathFails += entry.results.xpath ? 0 : 1;
+            existing.cssSelectorSuccess += entry.results.cssSelector ? 1 : 0;
+            existing.cssSelectorFails += entry.results.cssSelector ? 0 : 1;
+            existing.cssPathSuccess += entry.results.cssPath ? 1 : 0;
+            existing.cssPathFails += entry.results.cssPath ? 0 : 1;
+          }
           existing.lastUpdated = Date.now();
           xpathStore.put(existing);
         } else {
@@ -82,20 +91,24 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
           xpathStore.put(entry);
         }
       };
+      getRequest.onerror = (err) => console.error("Failed to check existing entry:", err);
   
-      // Log changes separately
-      const changeTx = db.transaction(["changes"], "readwrite");
-      const changeStore = changeTx.objectStore("changes");
-      const changeEntry = {
-        pathId: entry.id,
-        time: Date.now(),
-        results: entry.results, // Pass/fail and timing
-        changes: { value: entry.value } // Log value changes (expand as needed)
-      };
-      changeStore.add(changeEntry);
+      // Log changes separately if changes store exists
+      if (db.objectStoreNames.contains("changes")) {
+        const changeTx = db.transaction(["changes"], "readwrite");
+        const changeStore = changeTx.objectStore("changes");
+        const changeEntry = {
+          pathId: entry.id,
+          time: Date.now(),
+          results: entry.results || {}, // Pass/fail and timing, default empty if missing
+          changes: { value: entry.value || "" } // Log value changes, default empty
+        };
+        changeStore.add(changeEntry).onerror = (err) => console.error("Failed to log change:", err);
+      }
   
       xpathTx.oncomplete = () => loadXPaths();
-    });
+      xpathTx.onerror = (err) => console.error("XPath transaction failed:", err);
+    }).catch((err) => console.error("DB access failed:", err));
   }
   // Store an encryption key in IndexedDB
   else if (message.action === "setKey") {

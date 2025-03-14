@@ -7,12 +7,16 @@ let currentSection = null;
 let currentSubsection = null;
 let logs = [];
 
-console.log("management.js loaded");
+// Utility to get DOM elements safely
+function getElement(id) {
+  const el = document.getElementById(id);
+  if (!el) console.error(`${id} not found`);
+  return el;
+}
 
-// Render the workflow data in the management UI
+// Simplified render for single-entry display (used initially or as fallback)
 function renderManagementList(data) {
-  const container = getElement("workflow-list"); // Target #workflow-list, not #container
-  // Check if data is missing or invalid
+  const container = getElement("workflow-list");
   if (!data) {
     const p = document.createElement("p");
     p.textContent = "No workflows found.";
@@ -21,12 +25,8 @@ function renderManagementList(data) {
     return;
   }
 
-  // Clear existing content
   container.innerHTML = "";
-
-  // Handle both array (multiple entries) and object (single entry) formats
-  const entry = Array.isArray(data) ? data[0] : data; // Use first entry if array
-  // Check if entry lacks a state (core identifier)
+  const entry = Array.isArray(data) ? data[0] : data;
   if (!entry.state) {
     const p = document.createElement("p");
     p.textContent = "No workflow data available.";
@@ -34,16 +34,12 @@ function renderManagementList(data) {
     return;
   }
 
-  // Create main workflow div
   const stateDiv = document.createElement("div");
   stateDiv.className = "workflow";
-
-  // Add workflow state title
   const h2 = document.createElement("h2");
   h2.textContent = entry.state || "Unnamed Workflow";
   stateDiv.appendChild(h2);
 
-  // Add page field group
   const pageDiv = document.createElement("div");
   pageDiv.className = "page field-group";
   const pageLabel = document.createElement("label");
@@ -52,14 +48,13 @@ function renderManagementList(data) {
   const pageBtnGroup = document.createElement("div");
   pageBtnGroup.className = "button-group";
   pageBtnGroup.innerHTML = `
-    <button class="edit-btn" data-type="page" data-name="${entry.page || "Default Page"}">Edit</button>
+    <button class="edit-btn" data-type="page" data-name="${entry.page || 'Default Page'}">Edit</button>
     <button class="add-subsection">+</button>
     <button class="remove-subsection">-</button>
   `;
   pageDiv.appendChild(pageBtnGroup);
   stateDiv.appendChild(pageDiv);
 
-  // Add section field group
   const sectionDiv = document.createElement("div");
   sectionDiv.className = "section field-group";
   const sectionLabel = document.createElement("label");
@@ -68,14 +63,13 @@ function renderManagementList(data) {
   const sectionBtnGroup = document.createElement("div");
   sectionBtnGroup.className = "button-group";
   sectionBtnGroup.innerHTML = `
-    <button class="edit-btn" data-type="section" data-name="${entry.section || "Default Section"}">Edit</button>
+    <button class="edit-btn" data-type="section" data-name="${entry.section || 'Default Section'}">Edit</button>
     <button class="add-subsection">+</button>
     <button class="remove-subsection">-</button>
   `;
   sectionDiv.appendChild(sectionBtnGroup);
   stateDiv.appendChild(sectionDiv);
 
-  // Add subsection field group
   const subsectionDiv = document.createElement("div");
   subsectionDiv.className = "subsection field-group";
   const subsectionLabel = document.createElement("label");
@@ -84,100 +78,66 @@ function renderManagementList(data) {
   const subsectionBtnGroup = document.createElement("div");
   subsectionBtnGroup.className = "button-group";
   subsectionBtnGroup.innerHTML = `
-    <button class="edit-btn" data-type="subsection" data-name="${entry.subsection || "Default Subsection"}">Edit</button>
+    <button class="edit-btn" data-type="subsection" data-name="${entry.subsection || 'Default Subsection'}">Edit</button>
     <button class="add-subsection">+</button>
     <button class="remove-subsection">-</button>
   `;
   subsectionDiv.appendChild(subsectionBtnGroup);
   stateDiv.appendChild(subsectionDiv);
 
-  // Append the workflow to the container
   container.appendChild(stateDiv);
 
   // Bind event listeners for Edit buttons
   document.querySelectorAll(".edit-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.dataset.type; // Get type (page, section, subsection)
-      const name = btn.dataset.name; // Get current name
-      const dialog = getElement("edit-dialog"); // Show edit dialog
+      const type = btn.dataset.type;
+      const name = btn.dataset.name;
+      const dialog = getElement("edit-dialog");
       const input = getElement("edit-label");
       input.value = name;
       dialog.showModal();
-      getElement("save-edit").onclick = () => { // Save new name
+      getElement("save-edit").onclick = () => {
         const newName = input.value.trim();
         if (newName) console.log(`Edited ${type}: ${name} to ${newName}`);
         dialog.close();
       };
-      getElement("cancel-edit").onclick = () => dialog.close(); // Cancel edit
+      getElement("cancel-edit").onclick = () => dialog.close();
     });
   });
 
   // Bind event listeners for Add buttons
   document.querySelectorAll(".add-subsection").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.closest(".field-group").className.split(" ")[0]; // Get type from class
-      const newName = prompt(`New ${type} name:`); // Prompt for new name
-      if (newName) console.log(`Added ${type}: ${newName}`);
+      const type = btn.closest(".field-group").className.split(" ")[0];
+      const newName = prompt(`New ${type} name:`);
+      if (newName) {
+        console.log(`Added ${type}: ${newName}`);
+        browser.runtime.sendMessage({
+          action: "pageSet",
+          currentState: entry.state || "Unnamed Workflow",
+          currentPage: type === "page" ? newName : entry.page,
+          currentSection: type === "section" ? newName : entry.section,
+          subsection: type === "subsection" ? newName : entry.subsection,
+          url: entry.url
+        });
+      }
     });
   });
 
   // Bind event listeners for Remove buttons
   document.querySelectorAll(".remove-subsection").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.closest(".field-group").className.split(" ")[0]; // Get type from class
-      const name = btn.closest(".field-group").querySelector("label").textContent; // Get current name
-      if (confirm(`Remove ${type}: ${name}?`)) console.log(`Removed ${type}: ${name}`);
+      const type = btn.closest(".field-group").className.split(" ")[0];
+      const name = btn.closest(".field-group").querySelector("label").textContent;
+      if (confirm(`Remove ${type}: ${name}?`)) {
+        console.log(`Removed ${type}: ${name}`);
+        browser.runtime.sendMessage({ action: "deleteData", data: { id: entry.id } });
+      }
     });
   });
 }
 
-document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
-    btn.classList.add("active");
-    getElement(btn.dataset.tab).classList.add("active");
-  });
-});
-
-// Export logs
-getElement("export-logs").addEventListener("click", () => {
-  browser.runtime.sendMessage({ action: "exportLogs" });
-});
-
-browser.runtime.onMessage.addListener((message) => {
-  console.log("Management received message:", message);
-  if (message.action === "xpathsLoaded") {
-    renderManagementList(message.data);
-  } else if (message.action === "logsExported") {
-    const blob = new Blob([message.data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "xpath-tracer-logs.json";
-    a.click();
-    URL.revokeObjectURL(url);
-    console.log("Logs exported to file");
-  }
-});
-
-browser.runtime.sendMessage({ action: "loadXPaths" });
-
-function getElement(id) {
-  const el = document.getElementById(id);
-  if (!el) console.error(`${id} not found`);
-  return el;
-}
-
-function updateLogs() {
-  const logOutput = getElement("log-output");
-  if (logOutput) logOutput.textContent = logs.join("\n");
-}
-
-function debounceLoadXPaths() {
-  browser.runtime.sendMessage({ action: "loadXPaths" });
-}
-
+// Detailed render for multi-level workflow list with Sortable.js
 function renderWorkflowList() {
   const list = getElement("workflow-list");
   console.log("Rendering workflow list, currentState:", currentState, "grouped:", grouped);
@@ -402,7 +362,7 @@ function initSortable() {
       });
     });
   });
-  }
+}
 
 function updateDropdown(filtered = Object.keys(grouped)) {
   const dropdown = getElement("workflow-dropdown");
@@ -411,8 +371,20 @@ function updateDropdown(filtered = Object.keys(grouped)) {
   dropdown.value = currentState || "";
 }
 
+function updateLogs() {
+  const logOutput = getElement("log-output");
+  if (logOutput) logOutput.textContent = logs.join("\n");
+}
+
+function debounceLoadXPaths() {
+  browser.runtime.sendMessage({ action: "loadXPaths" });
+}
+
+// Set up event listeners when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Override console.log here, after DOM is ready
+  console.log("DOM content loaded");
+
+  // Override console.log for log tab
   const originalConsoleLog = console.log;
   console.log = (...args) => {
     logs.push(args.map(arg => typeof arg === "object" ? JSON.stringify(arg) : arg).join(" "));
@@ -420,6 +392,28 @@ document.addEventListener("DOMContentLoaded", () => {
     originalConsoleLog(...args);
   };
 
+  // Tab switching
+  getElement("workflow-tab").addEventListener("click", () => {
+    getElement("workflow-tab").classList.add("active");
+    getElement("logs-tab").classList.remove("active");
+    getElement("workflow-content").style.display = "block";
+    getElement("logs-content").style.display = "none";
+  });
+  getElement("logs-tab").addEventListener("click", () => {
+    getElement("logs-tab").classList.add("active");
+    getElement("workflow-tab").classList.remove("active");
+    getElement("workflow-content").style.display = "none";
+    getElement("logs-content").style.display = "block";
+    updateLogs();
+  });
+
+  // Export logs
+  getElement("export-logs").addEventListener("click", () => {
+    console.log("Export logs button clicked");
+    browser.runtime.sendMessage({ action: "exportLogs" });
+  });
+
+  // Save key
   getElement("save-key").addEventListener("click", () => {
     const password = getElement("key-input").value;
     console.log("Save Key clicked");
@@ -431,6 +425,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Start workflow
   getElement("start-workflow").addEventListener("click", () => {
     const url = getElement("url-input").value.trim();
     if (url) {
@@ -440,27 +435,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Workflow search
   getElement("workflow-search").addEventListener("input", (e) => {
     const search = e.target.value.toLowerCase();
     const filtered = Object.keys(grouped).filter(state => state.toLowerCase().includes(search));
     updateDropdown(filtered);
   });
 
+  // Workflow dropdown
   getElement("workflow-dropdown").addEventListener("change", (e) => {
     currentState = e.target.value || null;
     renderWorkflowList();
   });
 
-  getElement("workflow-tab").addEventListener("click", () => {
-    getElement("workflow-content").style.display = "block";
-    getElement("logs-content").style.display = "none";
-  });
-  getElement("logs-tab").addEventListener("click", () => {
-    getElement("workflow-content").style.display = "none";
-    getElement("logs-content").style.display = "block";
-    updateLogs();
-  });
-
+  // Load initial state
   browser.storage.local.get(["currentState", "currentPage", "currentSection", "currentSubsection"]).then((result) => {
     currentState = result.currentState || null;
     currentPage = result.currentPage || null;
@@ -471,8 +459,19 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDropdown();
     debounceLoadXPaths();
   });
+
+  // Legacy tab buttons (if still in HTML)
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+      btn.classList.add("active");
+      getElement(btn.dataset.tab).classList.add("active");
+    });
+  });
 });
 
+// Handle incoming messages from background.js
 browser.runtime.onMessage.addListener((message) => {
   console.log("Management received message:", message);
   if (message.action === "xpathsLoaded") {
@@ -489,8 +488,17 @@ browser.runtime.onMessage.addListener((message) => {
       return acc;
     }, {});
     console.log("XPaths loaded, grouped:", grouped);
-    renderWorkflowList();
+    renderWorkflowList(); // Use detailed render by default
     updateDropdown();
+  } else if (message.action === "logsExported") {
+    const blob = new Blob([message.data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "xpath-tracer-logs.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    console.log("Logs exported to file");
   } else if (message.action === "keySet") {
     console.log("Encryption key set successfully, hiding controls");
     getElement("encryption-controls").style.display = "none";
@@ -523,3 +531,6 @@ browser.runtime.onMessage.addListener((message) => {
 function debugLog(message) {
   console.log(message);
 }
+
+// Initial load of workflows
+browser.runtime.sendMessage({ action: "loadXPaths" });
