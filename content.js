@@ -133,14 +133,13 @@ function getElementData(event) {
   };
 }
 
-document.addEventListener("click", (event) => {
-  if (isCapturing && event.altKey) {
-    event.preventDefault();
-    const data = getElementData(event);
-    lastClickedElement = event.target; // Add this line
-    console.log("Alt+Click detected:", { data, url: window.location.href });
-    browser.runtime.sendMessage({ data, url: window.location.href });
-  }
+document.addEventListener("click", (e) => {
+  if (!isCapturing || !e.altKey) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const data = getElementData(e.target);
+  console.log("Captured:", data);
+  browser.runtime.sendMessage({ action: "relayData", data, url: window.location.href });
 });
 
 browser.runtime.onMessage.addListener((message) => {

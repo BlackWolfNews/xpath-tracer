@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1741922634306,
+    "time": 1741922634306,
+    "message": "Page context saved to IndexedDB: {\"id\":1741922634305,\"state\":null,\"page\":\"Login\",\"section\":\"Hopscotch\",\"subsection\":\"Opps, delete this.\",\"url\":\"https://alpass.dot.state.al.us/permits/loginval.asp\",\"lastUpdated\":1741922634305}"
+  },
+  {
+    "id": 1741922683849,
+    "time": 1741922683849,
+    "message": "Page context saved to IndexedDB: {\"id\":1741922683845,\"state\":\"Unnamed Workflow\",\"page\":\"Login\",\"section\":\"Hopscotch\",\"subsection\":\"Default Subsection\",\"url\":\"moz-extension://2efb07a9-e19d-462b-bb06-70924590327e/management.html\",\"lastUpdated\":1741922683845}"
+  }
+]

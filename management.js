@@ -9,73 +9,123 @@ let logs = [];
 
 console.log("management.js loaded");
 
+// Render the workflow data in the management UI
 function renderManagementList(data) {
-  const container = getElement("container");
+  const container = getElement("workflow-list"); // Target #workflow-list, not #container
+  // Check if data is missing or invalid
   if (!data) {
-    container.innerHTML = "<p>No workflows found.</p>";
+    const p = document.createElement("p");
+    p.textContent = "No workflows found.";
+    container.appendChild(p);
     console.log("No valid data received:", data);
     return;
   }
 
+  // Clear existing content
   container.innerHTML = "";
-  const entry = Array.isArray(data) ? data[0] : data; // Handle object or array
+
+  // Handle both array (multiple entries) and object (single entry) formats
+  const entry = Array.isArray(data) ? data[0] : data; // Use first entry if array
+  // Check if entry lacks a state (core identifier)
   if (!entry.state) {
-    container.innerHTML = "<p>No workflow data available.</p>";
+    const p = document.createElement("p");
+    p.textContent = "No workflow data available.";
+    container.appendChild(p);
     return;
   }
 
+  // Create main workflow div
   const stateDiv = document.createElement("div");
   stateDiv.className = "workflow";
-  stateDiv.innerHTML = `
-    <h2>${entry.state || "Unnamed Workflow"}</h2>
-    <div class="page field-group">
-      <label>${entry.page || "Default Page"}</label>
-      <div class="button-group">
-        <button class="edit-btn" data-type="page" data-name="${entry.page}">Edit</button>
-        <button class="add-subsection">+</button>
-        <button class="remove-subsection">-</button>
-      </div>
-    </div>
-    <div class="section field-group">
-      <label>${entry.section || "Default Section"}</label>
-      <div class="button-group">
-        <button class="edit-btn" data-type="section" data-name="${entry.section}">Edit</button>
-        <button class="add-subsection">+</button>
-        <button class="remove-subsection">-</button>
-      </div>
-    </div>
-    <div class="subsection field-group">
-      <label>${entry.subsection || "Default Subsection"}</label>
-      <div class="button-group">
-        <button class="edit-btn" data-type="subsection" data-name="${entry.subsection}">Edit</button>
-        <button class="add-subsection">+</button>
-        <button class="remove-subsection">-</button>
-      </div>
-    </div>
+
+  // Add workflow state title
+  const h2 = document.createElement("h2");
+  h2.textContent = entry.state || "Unnamed Workflow";
+  stateDiv.appendChild(h2);
+
+  // Add page field group
+  const pageDiv = document.createElement("div");
+  pageDiv.className = "page field-group";
+  const pageLabel = document.createElement("label");
+  pageLabel.textContent = entry.page || "Default Page";
+  pageDiv.appendChild(pageLabel);
+  const pageBtnGroup = document.createElement("div");
+  pageBtnGroup.className = "button-group";
+  pageBtnGroup.innerHTML = `
+    <button class="edit-btn" data-type="page" data-name="${entry.page || "Default Page"}">Edit</button>
+    <button class="add-subsection">+</button>
+    <button class="remove-subsection">-</button>
   `;
+  pageDiv.appendChild(pageBtnGroup);
+  stateDiv.appendChild(pageDiv);
+
+  // Add section field group
+  const sectionDiv = document.createElement("div");
+  sectionDiv.className = "section field-group";
+  const sectionLabel = document.createElement("label");
+  sectionLabel.textContent = entry.section || "Default Section";
+  sectionDiv.appendChild(sectionLabel);
+  const sectionBtnGroup = document.createElement("div");
+  sectionBtnGroup.className = "button-group";
+  sectionBtnGroup.innerHTML = `
+    <button class="edit-btn" data-type="section" data-name="${entry.section || "Default Section"}">Edit</button>
+    <button class="add-subsection">+</button>
+    <button class="remove-subsection">-</button>
+  `;
+  sectionDiv.appendChild(sectionBtnGroup);
+  stateDiv.appendChild(sectionDiv);
+
+  // Add subsection field group
+  const subsectionDiv = document.createElement("div");
+  subsectionDiv.className = "subsection field-group";
+  const subsectionLabel = document.createElement("label");
+  subsectionLabel.textContent = entry.subsection || "Default Subsection";
+  subsectionDiv.appendChild(subsectionLabel);
+  const subsectionBtnGroup = document.createElement("div");
+  subsectionBtnGroup.className = "button-group";
+  subsectionBtnGroup.innerHTML = `
+    <button class="edit-btn" data-type="subsection" data-name="${entry.subsection || "Default Subsection"}">Edit</button>
+    <button class="add-subsection">+</button>
+    <button class="remove-subsection">-</button>
+  `;
+  subsectionDiv.appendChild(subsectionBtnGroup);
+  stateDiv.appendChild(subsectionDiv);
+
+  // Append the workflow to the container
   container.appendChild(stateDiv);
 
+  // Bind event listeners for Edit buttons
   document.querySelectorAll(".edit-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.dataset.type;
-      const name = btn.dataset.name;
-      const newName = prompt(`Edit ${type} name:`, name);
-      if (newName) console.log(`Edited ${type}: ${name} to ${newName}`);
+      const type = btn.dataset.type; // Get type (page, section, subsection)
+      const name = btn.dataset.name; // Get current name
+      const dialog = getElement("edit-dialog"); // Show edit dialog
+      const input = getElement("edit-label");
+      input.value = name;
+      dialog.showModal();
+      getElement("save-edit").onclick = () => { // Save new name
+        const newName = input.value.trim();
+        if (newName) console.log(`Edited ${type}: ${name} to ${newName}`);
+        dialog.close();
+      };
+      getElement("cancel-edit").onclick = () => dialog.close(); // Cancel edit
     });
   });
 
+  // Bind event listeners for Add buttons
   document.querySelectorAll(".add-subsection").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.closest(".field-group").className.split(" ")[0];
-      const newName = prompt(`New ${type} name:`);
+      const type = btn.closest(".field-group").className.split(" ")[0]; // Get type from class
+      const newName = prompt(`New ${type} name:`); // Prompt for new name
       if (newName) console.log(`Added ${type}: ${newName}`);
     });
   });
 
+  // Bind event listeners for Remove buttons
   document.querySelectorAll(".remove-subsection").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const type = btn.closest(".field-group").className.split(" ")[0];
-      const name = btn.closest(".field-group").querySelector("label").textContent;
+      const type = btn.closest(".field-group").className.split(" ")[0]; // Get type from class
+      const name = btn.closest(".field-group").querySelector("label").textContent; // Get current name
       if (confirm(`Remove ${type}: ${name}?`)) console.log(`Removed ${type}: ${name}`);
     });
   });
