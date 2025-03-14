@@ -5,63 +5,13 @@
   <title>XPath Tracer</title>
   <link rel="stylesheet" href="management.css">
   <script src="Sortable.min.js"></script>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #management-container {
-      width: 80%;
-      max-width: 800px;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    #tabs { display: flex; gap: 10px; }
-    .tab-content { margin-top: 10px; }
-    #log-output { background: #f0f0f0; padding: 10px; max-height: 400px; overflow-y: auto; }
-    button {
-      border-radius: 8px;
-      padding: 5px 10px;
-    }
-    input[type="text"], input[type="password"], select, .popup {
-      border-radius: 37px;
-      padding: 5px;
-    }
-    #workflow-search, #workflow-dropdown {
-      text-align: center;
-    }
-    #workflow-search::placeholder {
-      text-align: center;
-    }
-    .sortable-pages > li {
-      font-size: 18px;
-      font-weight: bold;
-      text-decoration: underline;
-    }
-    .sortable-sections > li {
-      font-size: 16px;
-      font-weight: bold;
-      text-decoration: underline;
-    }
-    .sortable-entries > li {
-      font-size: 14px;
-    }
-    .sortable-entries > li::after {
-      content: " (" attr(data-type) ")";
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
   <div id="management-container">
     <h1>XPath Tracer Management</h1>
     <div id="tabs">
-      <button id="workflow-tab" class="active">Workflows</button>
-      <button id="logs-tab">Logs</button>
+      <button id="workflow-tab" class="tab-btn active">Workflows</button>
+      <button id="logs-tab" class="tab-btn">Logs</button>
     </div>
     <div id="workflow-content" class="tab-content">
       <div id="encryption-controls">
@@ -85,7 +35,6 @@
       <button id="cancel-edit">Cancel</button>
     </dialog>
   </div>
-  <div class="paths"></div>
   <script src="management.js"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@ function getElement(id) {
 }
 
 // Simplified render for single-entry display (used initially or as fallback)
-function renderManagementList(data) {
+function renderManagementList(data) { // Renamed from renderWorkflowList
   const container = getElement("workflow-list");
   if (!data) {
     const p = document.createElement("p");
@@ -138,7 +138,7 @@ function renderManagementList(data) {
 }
 
 // Detailed render for multi-level workflow list with Sortable.js
-function renderWorkflowList() {
+function renderWorkflowList() { // Second definition kept as is
   const list = getElement("workflow-list");
   console.log("Rendering workflow list, currentState:", currentState, "grouped:", grouped);
   list.innerHTML = currentState && Object.keys(grouped[currentState] || {}).length
@@ -387,8 +387,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Override console.log for log tab
   const originalConsoleLog = console.log;
   console.log = (...args) => {
-    logs.push(args.map(arg => typeof arg === "object" ? JSON.stringify(arg) : arg).join(" "));
+    const message = args.map(arg => typeof arg === "object" ? JSON.stringify(arg) : arg).join(" ");
+    logs.push(message);
     updateLogs();
+    browser.runtime.sendMessage({ action: "logMessage", message });
     originalConsoleLog(...args);
   };
 

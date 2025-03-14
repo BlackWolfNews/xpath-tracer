@@ -5,69 +5,6 @@
   <title>XPath Tracer</title>
   <link rel="stylesheet" href="sidebar.css">
   <script src="Sortable.min.js"></script>
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #label-entry {
-      margin-top: 10px;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    #label-entry.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    #sidebar-container {
-      width: 300px;
-      padding: 10px;
-      box-sizing: border-box;
-    }
-    button {
-      border-radius: 8px;
-      padding: 5px 10px;
-    }
-    input[type="text"],
-    select,
-    #workflow-dialog,
-    #label-entry {
-      border-radius: 37px;
-      padding: 5px;
-    }
-    #workflow-search,
-    #workflow-dropdown {
-      text-align: center;
-    }
-    #workflow-search::placeholder {
-      text-align: center;
-    }
-    .sortable-pages > li {
-      font-size: 18px;
-      font-weight: bold;
-      text-decoration: underline;
-    }
-    .sortable-sections > li {
-      font-size: 16px;
-      font-weight: bold;
-      text-decoration: underline;
-    }
-    .sortable-subsections > li {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    .sortable-entries > li {
-      font-size: 14px;
-    }
-    .sortable-entries > li::after {
-      content: " (" attr(data-type) ")";
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
   <div id="sidebar-container">
@@ -101,11 +38,10 @@
     </div>
     <div id="error-message" style="color: red; text-align: center;"></div>
     <ul id="xpath-list"></ul>
-    <script src="sidebar.js"></script>
+    <div id="capture-list">
+      <!-- Dynamic entries -->
+    </div>
   </div>
-  <div id="new-page" style="text-align: center;">New Page Detected</div>
-<div id="capture-list">
-  <!-- Dynamic entries -->
-</div>
+  <script src="sidebar.js"></script>
 </body>
 </html>

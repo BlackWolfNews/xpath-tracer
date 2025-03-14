@@ -1,7 +1,7 @@
 console.log("content.js loaded");
 
 let isCapturing = false;
-let lastClickedElement = null; // Add this at the top of content.js
+let lastClickedElement = null;
 
 const observer = new MutationObserver((mutations) => {
   if (isCapturing) {
@@ -18,14 +18,14 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 observer.observe(document.body, {
-  childList: true,    // Watch for added/removed elements
-  subtree: true,      // Watch the whole DOM tree
-  attributes: true    // Watch for attribute changes (e.g., class updates)
+  childList: true,
+  subtree: true,
+  attributes: true
 });
 
 function generateXPath(element) {
   if (!element) return '';
-  if (element.id) return `//*[@id="${element.id}"]`; // Use ID if available
+  if (element.id) return `//*[@id="${element.id}"]`;
   if (element === document.body) return '/html/body';
 
   const tagName = element.tagName.toLowerCase();
@@ -34,7 +34,6 @@ function generateXPath(element) {
 
   while (current && current !== document.body) {
     let selector = tagName;
-    // Add unique attributes
     if (current.id) {
       return `//*[@id="${current.id}"]`;
     } else if (current.name) {
@@ -44,7 +43,6 @@ function generateXPath(element) {
       selector += `[contains(@class, "${classes}")]`;
     }
 
-    // Add index only if needed
     const siblings = Array.from(current.parentNode.children).filter(
       sib => sib.tagName.toLowerCase() === tagName
     );
@@ -79,7 +77,6 @@ function generateCSSPath(element) {
       selector += `.${classes}`;
     }
 
-    // Add index only if needed
     const siblings = Array.from(current.parentNode.children).filter(
       sib => sib.tagName === current.tagName
     );
@@ -128,17 +125,46 @@ function getElementData(event) {
       ? `[name="${element.name}"]`
       : element.className
       ? `.${element.className.split(" ")[0]}`
-      : element.tagName.toLowerCase(), // Fallback to tag
+      : element.tagName.toLowerCase(),
     cssPath,
   };
+}
+
+function evaluatePaths(element, data) {
+  const startXPath = performance.now();
+  const xpathPass = !!document.evaluate(data.xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  const xpathTime = performance.now() - startXPath;
+
+  const startCSS = performance.now();
+  const cssPass = !!document.querySelector(data.cssSelector);
+  const cssTime = performance.now() - startCSS;
+
+  const startPath = performance.now();
+  const pathPass = !!document.querySelector(data.cssPath);
+  const pathTime = performance.now() - startPath;
+
+  return {
+    xpath: xpathPass,
+    xpathTime,
+    cssSelector: cssPass,
+    cssSelectorTime: cssTime,
+    cssPath: pathPass,
+    cssPathTime: pathTime
+  };
+}
+
+function logToBackground(message) {
+  browser.runtime.sendMessage({ action: "logMessage", message });
 }
 
 document.addEventListener("click", (e) => {
   if (!isCapturing || !e.altKey) return;
   e.preventDefault();
   e.stopPropagation();
-  const data = getElementData(e.target);
-  console.log("Captured:", data);
+  lastClickedElement = e.target; // Store the last clicked element
+  const data = getElementData(e);
+  data.results = evaluatePaths(e.target, data);
+  logToBackground("Captured: " + JSON.stringify(data));
   browser.runtime.sendMessage({ action: "relayData", data, url: window.location.href });
 });
 
@@ -162,10 +188,17 @@ browser.runtime.onMessage.addListener((message) => {
     browser.runtime.sendMessage({
       action: "updateStats",
       xpath: message.xpath,
-      results: { xpath: results.xpath, cssSelector: results.cssSelector, cssPath: results.cssPath, xpathTime: results.xpathTime, cssSelectorTime: results.cssSelectorTime, cssPathTime: results.cssPathTime }
+      results: {
+        xpath: results.xpath,
+        cssSelector: results.cssSelector,
+        cssPath: results.cssPath,
+        xpathTime: results.xpathTime,
+        cssSelectorTime: results.cssSelectorTime,
+        cssPathTime: results.cssPathTime
+      }
     });
   } else if (message.action === "altClick" && !message.handled) {
-    message.handled = true; // Prevent duplicate sends
+    message.handled = true;
     browser.runtime.sendMessage({ data: message.data, url: message.url });
   } else if (message.action === "clearHighlights") {
     document.querySelectorAll("*").forEach((el) => {

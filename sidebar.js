@@ -55,13 +55,8 @@ function showWorkflowDialog() {
       currentState = workflowName;
       currentPage = pageName;
       currentSection = sections[0];
-      console.log(
-        "New workflow created:",
-        currentState,
-        "with page:",
-        currentPage,
-        "sections:",
-        sections
+      logToBackground(
+        "New workflow created: " + JSON.stringify({ state: currentState, page: currentPage, sections })
       );
       browser.storage.local.set({ currentState, currentPage, currentSection });
       browser.runtime.sendMessage({
@@ -126,7 +121,7 @@ function showPageDialog(url, tabId) {
       currentPage = pageName;
       currentSection = sectionName;
       const subsection = subsectionName;
-      console.log("New page set:", { currentPage, currentSection, subsection });
+      logToBackground("New page set: " + JSON.stringify({ currentPage, currentSection, subsection }));
       browser.storage.local.set({ currentPage, currentSection, subsection });
       browser.runtime.sendMessage({
         action: "pageSet",
@@ -135,8 +130,12 @@ function showPageDialog(url, tabId) {
         currentSection,
         subsection,
         url,
+      }).then(() => {
+        logToBackground("Page saved: " + JSON.stringify({ currentState, currentPage, currentSection, subsection }));
+      }).catch((err) => {
+        logToBackground("Failed to save page: " + err.message);
       });
-      getElement("label-input").disabled = true; // Deactivate Custom Label
+      getElement("label-input").disabled = true;
       dialog.style.display = "none";
     } else {
       alert("Please fill in Page and Section names.");
@@ -265,7 +264,7 @@ getElement("save-label").addEventListener("click", () => {
     const customLabel = getElement("label-input").value.trim();
     if (customLabel) {
       pendingData.data.customLabel = customLabel;
-      console.log("Saving data:", pendingData);
+      logToBackground("Saving data: " + JSON.stringify(pendingData));
       browser.runtime.sendMessage({
         action: "relayData",
         url: pendingData.url,
@@ -273,7 +272,7 @@ getElement("save-label").addEventListener("click", () => {
       });
       pendingData = null;
       getElement("label-input").value = "";
-      getElement("label-input").disabled = true; // Deactivate Custom Label
+      getElement("label-input").disabled = true;
       getElement("label-entry").classList.remove("active");
     }
   }
@@ -308,11 +307,8 @@ if (toggleCaptureButton) {
     browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
       activeTabId = tabs[0].id;
       isCapturing = !isCapturing;
-      console.log(
-        "Toggle Capture clicked, isCapturing:",
-        isCapturing,
-        "for tab:",
-        activeTabId
+      logToBackground(
+        "Toggle Capture clicked, isCapturing: " + isCapturing + " for tab: " + activeTabId
       );
       updateToggleButton();
       const labelEntry = getElement("label-entry");
@@ -329,7 +325,7 @@ if (toggleCaptureButton) {
 
 browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
   activeTabId = tabs[0].id;
-  console.log("Initial active tab ID set:", activeTabId);
+  logToBackground("Initial active tab ID set: " + activeTabId);
   browser.runtime.sendMessage({ action: "getManagementTab" }).then((response) => {
     managementTabId = response?.tabId || null;
     if (
@@ -338,17 +334,13 @@ browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
     ) {
       isCapturing = response.enabled;
       updateToggleButton();
-    } else if (message.action === "getManagementTab") {
-      browser.tabs.query({ url: browser.runtime.getURL("management.html") }).then((tabs) => {
-        browser.runtime.sendMessage({ tabId: tabs[0]?.id });
-      });
     }
   });
 });
 
 browser.tabs.onActivated.addListener((activeInfo) => {
   activeTabId = activeInfo.tabId;
-  console.log("Active tab changed to:", activeTabId);
+  logToBackground("Active tab changed to: " + activeTabId);
 });
 
 function renderList(data) {
@@ -365,7 +357,7 @@ function renderList(data) {
     const hBtn = document.createElement("button");
     hBtn.textContent = "H";
     hBtn.className = "highlight-btn";
-    hBtn.onclick = () => highlightElement(entry);
+    hBtn.onclick = () => highlightElement(entry.xpath, entry.cssSelector, entry.cssPath, entry.url);
     const addBtn = document.createElement("button");
     addBtn.textContent = "+";
     addBtn.className = "small-btn";
@@ -380,31 +372,40 @@ function renderList(data) {
         browser.tabs.create({ url: "management.html" }).then((tab) => {
           managementTabId = tab.id;
         });
-      } // Add this closing brace for onclick
-    }; // Semicolon optional but clean
+      }
+    };
     const removeBtn = document.createElement("button");
     removeBtn.textContent = "-";
     removeBtn.className = "small-btn remove";
     removeBtn.onclick = () => removeEntry(entry);
     btnDiv.appendChild(hBtn);
     btnDiv.appendChild(addBtn);
-    btnDiv.appendChild(editBtn); // Add editBtn here (was missing!)
+    btnDiv.appendChild(editBtn);
     btnDiv.appendChild(removeBtn);
     div.appendChild(btnDiv);
     list.appendChild(div);
-  }); // Close forEach
-} // Close function
+  });
+}
 
 function addSectionPrompt(entry) {
   const section = prompt("Section name (leave blank for none):");
   if (section !== null) {
     entry.section = section || "";
-    saveData(entry);
+    browser.runtime.sendMessage({
+      action: "saveData",
+      url: entry.url,
+      data: entry
+    });
+    logToBackground("Section added to entry: " + JSON.stringify(entry));
   }
 }
 
 function removeEntry(entry) {
-  // Logic to remove from IndexedDB and re-render
+  browser.runtime.sendMessage({
+    action: "deleteData",
+    data: { id: entry.id }
+  });
+  logToBackground("Entry removed: " + JSON.stringify(entry));
 }
 
 browser.runtime.onMessage.addListener((message) => {
@@ -418,7 +419,7 @@ browser.runtime.onMessage.addListener((message) => {
         enabled: false,
         tabId: message.tabId,
       });
-      console.log("Capture auto-disabled due to URL change:", message.url);
+      logToBackground("Capture auto-disabled due to URL change: " + message.url);
     }
     showPageDialog(message.url, message.tabId);
   } else if (message.action === "error") {
@@ -428,10 +429,14 @@ browser.runtime.onMessage.addListener((message) => {
     const labelEntry = getElement("label-entry");
     labelEntry.classList.add("active");
     getElement("label-input").focus();
-    console.log("Label prompt displayed for:", message.data);
+    logToBackground("Label prompt displayed for: " + JSON.stringify(message.data));
   } else if (message.action === "xpathsLoaded") {
     renderSidebarList(message.data);
     updateDropdown(message.data);
+  } else if (message.action === "getManagementTab") {
+    browser.tabs.query({ url: browser.runtime.getURL("management.html") }).then((tabs) => {
+      browser.runtime.sendMessage({ tabId: tabs[0]?.id });
+    });
   }
 });
 
@@ -462,12 +467,10 @@ getElement("workflow-dropdown").addEventListener("change", (e) => {
   browser.runtime.sendMessage({ action: "loadXPaths" });
 });
 
+function logToBackground(message) {
+  browser.runtime.sendMessage({ action: "logMessage", message });
+}
+
 // Show workflow dialog when sidebar loads
 showWorkflowDialog();
-
 updateToggleButton();
-
-function debugLog(message) {
-  console.log(message); // For now, later to IndexedDB
-  // dbPromise.then(db => db.transaction(["logs"], "readwrite").objectStore("logs").add({ time: Date.now(), message }));
-}

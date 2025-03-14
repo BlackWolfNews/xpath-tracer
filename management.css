@@ -2,12 +2,20 @@ body {
   background-color: #20B2AA;
   font-family: Arial, sans-serif;
   padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
 }
 
-#encryption-controls,
-#export-controls,
-#capture-controls,
-#workflow-selector,
+#management-container {
+  width: 80%;
+  max-width: 800px;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 #encryption-controls,
 #url-input {
   margin-bottom: 10px;
@@ -47,6 +55,7 @@ button, .button-group button {
   max-width: 80%;
   word-break: keep-all;
   z-index: 0;
+  border-radius: 8px; /* From HTML */
 }
 
 button:before, .button-group button:before {
@@ -119,15 +128,6 @@ button:disabled {
 }
 
 /* Specific Button Overrides */
-.delete {
-  padding: 2px 8px;
-  font-size: 12px;
-}
-
-.delete:hover:not(:disabled) {
-  box-shadow: 0 0 5px 5px #cc0000;
-}
-
 .delete-btn {
   padding: 5px 10px;
 }
@@ -160,7 +160,7 @@ button:disabled {
 }
 
 /* Input and Dropdown Theme */
-input[type="text"], select {
+input[type="text"], input[type="password"], select {
   padding: 8px;
   border: ridge #00ffffcf;
   border-radius: 37px;
@@ -169,8 +169,16 @@ input[type="text"], select {
   background-color: #18ece2;
 }
 
+#workflow-search, #workflow-dropdown {
+  text-align: center;
+}
+
+#workflow-search::placeholder {
+  text-align: center;
+}
+
 /* Popup */
-.popup {
+dialog {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -182,22 +190,22 @@ input[type="text"], select {
   z-index: 1000;
 }
 
-.popup h3 {
+dialog h3 {
   margin-top: 0;
 }
 
-.popup label {
+dialog label {
   display: block;
   margin: 10px 0 5px;
 }
 
-.popup .field-group {
+dialog .field-group {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-.popup .button-group {
+dialog .button-group {
   display: flex;
   gap: 5px;
   margin-top: 5px;
@@ -213,9 +221,18 @@ input[type="text"], select {
   margin-bottom: 10px;
 }
 
-.sortable-pages, .sortable-sections, .sortable-entries {
+.sortable-pages, .sortable-sections, .sortable-subsections {
   list-style: none;
   padding-left: 20px;
+}
+
+.sortable-subsections > li {
+  font-size: 14px;
+}
+
+.sortable-subsections > li::after {
+  content: " (" attr(data-type) ")";
+  text-decoration: underline;
 }
 
 .page, .section, .entry {
@@ -228,16 +245,6 @@ input[type="text"], select {
   gap: 5px;
 }
 
-.section-title {
-  cursor: pointer;
-}
-
-.section-title.active {
-  background-color: #e0f7fa;
-  font-weight: bold;
-  padding: 2px 5px;
-}
-
 .grab {
   cursor: move;
   margin-left: 5px;
@@ -248,11 +255,6 @@ input[type="text"], select {
 .placeholder {
   color: #666;
   font-style: italic;
-}
-
-#container {
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .paths {
@@ -301,11 +303,6 @@ small {
 
 .tab-content {
   margin-top: 10px;
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
 }
 
 #log-output {
@@ -317,8 +314,4 @@ small {
 
 .paths {
   display: none;
-}
-
-.paths.visible {
-  display: block;
 }

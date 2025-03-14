@@ -2,13 +2,19 @@ body {
   background-color: #20B2AA;
   font-family: Arial, sans-serif;
   padding: 10px;
-  width: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
 }
 
-#encryption-controls,
-#export-controls,
-#capture-controls,
-#workflow-selector,
+#sidebar-container {
+  width: 300px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
 #sidebar-controls {
   margin-bottom: 10px;
   text-align: center;
@@ -47,6 +53,7 @@ button, .button-group button {
   max-width: 80%;
   word-break: keep-all;
   z-index: 0;
+  border-radius: 8px; /* From HTML */
 }
 
 button:before, .button-group button:before {
@@ -129,23 +136,6 @@ button:disabled {
   box-shadow: 0 0 5px 5px #4444ff;
 }
 
-#clear-highlights {
-  padding: 10px 20px;
-}
-
-#clear-highlights:hover:not(:disabled) {
-  box-shadow: 0 0 5px 5px #4444ff;
-}
-
-.delete {
-  padding: 2px 8px;
-  font-size: 12px;
-}
-
-.delete:hover:not(:disabled) {
-  box-shadow: 0 0 5px 5px #cc0000;
-}
-
 .delete-btn {
   padding: 5px 10px;
 }
@@ -163,14 +153,21 @@ button:disabled {
 }
 
 /* Input and Dropdown Theme */
-input[type="text"],
-select {
+input[type="text"], select {
   padding: 8px;
   border: ridge #00ffffcf;
   border-radius: 37px;
   width: 100%;
   box-sizing: border-box;
   background-color: #18ece2;
+}
+
+#workflow-search, #workflow-dropdown {
+  text-align: center;
+}
+
+#workflow-search::placeholder {
+  text-align: center;
 }
 
 /* Workflow Dialog */
@@ -194,19 +191,7 @@ select {
 
 #workflow-dialog label {
   display: block;
-  margin: 10px 0 5px; /* Space above field */
-}
-
-#workflow-dialog .field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-#workflow-dialog .button-group {
-  display: flex;
-  gap: 5px;
-  margin-top: 5px;
+  margin: 10px 0 5px;
 }
 
 .section-entry {
@@ -221,6 +206,17 @@ select {
 }
 
 /* General UI */
+#label-entry {
+  margin-top: 10px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#label-entry.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 #xpath-list {
   list-style: none;
   padding: 0;
@@ -230,45 +226,27 @@ select {
   margin-bottom: 10px;
 }
 
-.sortable-pages, .sortable-sections, .sortable-entries {
+.sortable-pages, .sortable-sections, .sortable-subsections {
   list-style: none;
   padding-left: 20px;
+}
+
+.sortable-subsections > li {
+  font-size: 14px;
+}
+
+.sortable-subsections > li::after {
+  content: " (" attr(data-type) ")";
+  text-decoration: underline;
 }
 
 .page, .section, .entry {
   margin: 5px 0;
 }
 
-.section-title {
-  cursor: pointer;
-}
-
-.section-title.active {
-  background-color: #e0f7fa;
-  font-weight: bold;
-  padding: 2px 5px;
-}
-
-.grab {
-  cursor: move;
-  margin-left: 5px;
-  margin-right: 5px;
-  color: #666;
-}
-
-.placeholder {
-  color: #666;
-  font-style: italic;
-}
-
-#xpath-list ul {
-  padding-left: 20px;
-}
-
 .entry {
   display: flex;
   flex-direction: column;
-  margin: 5px 0;
 }
 
 .entry label {
@@ -278,10 +256,6 @@ select {
 .entry-buttons {
   display: flex;
   gap: 5px;
-}
-
-button:not(.small-btn):not(.edit-btn):not(.delete-btn):not(.highlight-btn) {
-  padding: 8px 15px;
 }
 
 #new-page {
