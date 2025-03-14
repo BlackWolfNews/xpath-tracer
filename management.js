@@ -7,6 +7,112 @@ let currentSection = null;
 let currentSubsection = null;
 let logs = [];
 
+console.log("management.js loaded");
+
+function renderManagementList(data) {
+  const container = getElement("container");
+  if (!data) {
+    container.innerHTML = "<p>No workflows found.</p>";
+    console.log("No valid data received:", data);
+    return;
+  }
+
+  container.innerHTML = "";
+  const entry = Array.isArray(data) ? data[0] : data; // Handle object or array
+  if (!entry.state) {
+    container.innerHTML = "<p>No workflow data available.</p>";
+    return;
+  }
+
+  const stateDiv = document.createElement("div");
+  stateDiv.className = "workflow";
+  stateDiv.innerHTML = `
+    <h2>${entry.state || "Unnamed Workflow"}</h2>
+    <div class="page field-group">
+      <label>${entry.page || "Default Page"}</label>
+      <div class="button-group">
+        <button class="edit-btn" data-type="page" data-name="${entry.page}">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
+    <div class="section field-group">
+      <label>${entry.section || "Default Section"}</label>
+      <div class="button-group">
+        <button class="edit-btn" data-type="section" data-name="${entry.section}">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
+    <div class="subsection field-group">
+      <label>${entry.subsection || "Default Subsection"}</label>
+      <div class="button-group">
+        <button class="edit-btn" data-type="subsection" data-name="${entry.subsection}">Edit</button>
+        <button class="add-subsection">+</button>
+        <button class="remove-subsection">-</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(stateDiv);
+
+  document.querySelectorAll(".edit-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.type;
+      const name = btn.dataset.name;
+      const newName = prompt(`Edit ${type} name:`, name);
+      if (newName) console.log(`Edited ${type}: ${name} to ${newName}`);
+    });
+  });
+
+  document.querySelectorAll(".add-subsection").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const type = btn.closest(".field-group").className.split(" ")[0];
+      const newName = prompt(`New ${type} name:`);
+      if (newName) console.log(`Added ${type}: ${newName}`);
+    });
+  });
+
+  document.querySelectorAll(".remove-subsection").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const type = btn.closest(".field-group").className.split(" ")[0];
+      const name = btn.closest(".field-group").querySelector("label").textContent;
+      if (confirm(`Remove ${type}: ${name}?`)) console.log(`Removed ${type}: ${name}`);
+    });
+  });
+}
+
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+    btn.classList.add("active");
+    getElement(btn.dataset.tab).classList.add("active");
+  });
+});
+
+// Export logs
+getElement("export-logs").addEventListener("click", () => {
+  browser.runtime.sendMessage({ action: "exportLogs" });
+});
+
+browser.runtime.onMessage.addListener((message) => {
+  console.log("Management received message:", message);
+  if (message.action === "xpathsLoaded") {
+    renderManagementList(message.data);
+  } else if (message.action === "logsExported") {
+    const blob = new Blob([message.data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "xpath-tracer-logs.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    console.log("Logs exported to file");
+  }
+});
+
+browser.runtime.sendMessage({ action: "loadXPaths" });
+
 function getElement(id) {
   const el = document.getElementById(id);
   if (!el) console.error(`${id} not found`);

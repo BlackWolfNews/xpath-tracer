@@ -287,10 +287,25 @@ small {
 #tabs {
   display: flex;
   gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tab-btn {
+  padding: 5px 15px;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background-image: linear-gradient(92.83deg, #26C6C1 0%, #00A09A 100%);
 }
 
 .tab-content {
   margin-top: 10px;
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 #log-output {
